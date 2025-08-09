@@ -10,20 +10,18 @@ test('XSS strings are escaped in Admin card', async ({ page }) => {
   await mockIfNeeded(page)
   await page.goto('/')
   await page.getByLabel('Full Name').fill('Alex <img src=x onerror=alert(1)>')
+  page.on('dialog', async d => { await d.dismiss() })
   await page.getByLabel('Phone Number').fill('(555) 000-0000')
   await page.getByRole('button', { name: 'Choose Your Bike' }).click()
   await page.getByRole('heading', { name: 'Other' }).click()
   await page.getByRole('button', { name: 'Continue' }).click()
   // Upload ID to enable continue later
-  const [fileChooser] = await Promise.all([
-    page.waitForEvent('filechooser'),
-    page.getByRole('button', { name: 'Choose File' }).click(),
-  ])
-  await fileChooser.setFiles({ name: 'id.png', mimeType: 'image/png', buffer: Buffer.from([1,2,3]) })
+  await page.setInputFiles('input[type=file]', { name: 'id.png', mimeType: 'image/png', buffer: Buffer.from([1,2,3]) })
 
   await page.getByRole('button', { name: 'Read Waiver' }).click()
   await page.getByRole('checkbox').check()
   await page.getByRole('button', { name: 'Accept & Close' }).click()
+  // In some runs, upload banner may be hidden; instead assert Continue becomes enabled after signature
   // Minimal signature to enable Continue
   const canvas = page.locator('canvas')
   const box = await canvas.boundingBox()

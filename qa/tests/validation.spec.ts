@@ -5,7 +5,7 @@ async function mockIfNeeded(page) {
     await page.route('**/storage/v1/object/**', route => route.fulfill({ status: 200, body: '{}' }))
     await page.route('**/rest/v1/**', route => {
       const method = route.request().method()
-      if (method === 'POST') return route.fulfill({ status: 201, body: JSON.stringify([{ id: '1' }]) })
+      if (method === 'POST') return route.fulfill({ status: 201, body: JSON.stringify({ id: '1' }) })
       if (method === 'GET') return route.fulfill({ status: 200, body: '[]' })
       if (method === 'PATCH') return route.fulfill({ status: 204, body: '' })
       return route.continue()
@@ -27,7 +27,11 @@ test.describe('Validation & edge cases', () => {
     await expect(page.getByText('Please enter a valid phone number')).toBeVisible()
 
     await page.getByLabel('Email Address').fill('invalid')
+    // Blur to trigger validation and submit to render errors
+    await page.getByLabel('Full Name').click()
     await page.getByRole('button', { name: 'Choose Your Bike' }).click()
+    // Email validation is optional; only assert when email is provided and invalid
+    // Some UIs only validate email on change + submit; allow optional
     await expect(page.getByText('Please enter a valid email address')).toBeVisible()
   })
 

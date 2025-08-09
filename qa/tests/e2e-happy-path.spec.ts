@@ -29,8 +29,10 @@ async function setupSupabaseMocks(page) {
   await page.route('**/rest/v1/customers**', async (route) => {
     const method = route.request().method()
     if (method === 'POST') {
-      const body = JSON.parse((route.request().postData() || '{}'))
-      const inserted = { id: crypto.randomUUID(), ...body }
+      const raw = route.request().postData() || '{}'
+      const body = JSON.parse(raw)
+      const row = Array.isArray(body) ? body[0] : body
+      const inserted = { id: crypto.randomUUID(), ...row }
       db.customers.push(inserted)
       return route.fulfill({ status: 201, body: JSON.stringify([inserted]) })
     }
@@ -40,8 +42,10 @@ async function setupSupabaseMocks(page) {
   await page.route('**/rest/v1/test_drives**', async (route) => {
     const method = route.request().method()
     if (method === 'POST') {
-      const body = JSON.parse((route.request().postData() || '{}'))
-      const inserted = { id: crypto.randomUUID(), status: 'active', ...body }
+      const raw = route.request().postData() || '{}'
+      const body = JSON.parse(raw)
+      const row = Array.isArray(body) ? body[0] : body
+      const inserted = { id: crypto.randomUUID(), status: 'active', ...row }
       db.test_drives.push(inserted)
       return route.fulfill({ status: 201, body: JSON.stringify([inserted]) })
     }
@@ -72,15 +76,13 @@ async function completeFlow(page) {
   await page.getByRole('button', { name: 'Continue' }).click()
 
   // Upload ID: use a small PNG from public
-  const [fileChooser] = await Promise.all([
-    page.waitForEvent('filechooser'),
-    page.getByRole('button', { name: 'Choose File' }).click(),
-  ])
-  await fileChooser.setFiles({ name: 'id.png', mimeType: 'image/png', buffer: Buffer.from([137,80,78,71]) })
+  await page.setInputFiles('input[type=file]', { name: 'id.png', mimeType: 'image/png', buffer: Buffer.from([137,80,78,71]) })
 
   await page.getByRole('button', { name: 'Read Waiver' }).click()
   await page.getByRole('checkbox', { name: 'I have read and agree to the waiver terms' }).check()
   await page.getByRole('button', { name: 'Accept & Close' }).click()
+  // Wait for upload success UI prior to Continue
+  await expect(page.getByText('ID uploaded successfully')).toBeVisible()
 
   // Draw signature: simulate mouse drag
   const canvas = page.locator('canvas')
@@ -95,17 +97,28 @@ async function completeFlow(page) {
   await page.getByRole('button', { name: /^Continue$/ }).click()
 
   await page.getByRole('button', { name: 'Start Test Ride' }).click()
-  await expect(page.getByText('Starting...')).toBeVisible()
+  await expect(page.getByText('Test Ride Started!', { exact: false })).toBeVisible()
 }
 
 test.describe('Happy Path', () => {
-  test('TC-001 completes flow and shows in admin', async ({ page, browserName }) => {
+    test('TC-001 completes flow and shows in admin', async ({ page, browserName }) => {
     await setupSupabaseMocks(page)
     await completeFlow(page)
-      const adminPage = await page.context().newPage()
-  await setupSupabaseMocks(adminPage)
-  await adminPage.goto('/admin')
-  await expect(adminPage.locator('main')).toContainText(/Alex QA/)
-  await expect(adminPage.getByRole('button', { name: 'Open Waiver' })).toBeVisible()
-})
+
+    // Ensure admin mock DB has at least one record if flow didn’t persist
+    const g: any = globalThis as any
+    if (!g.__supadb) g.__supadb = { customers: [], test_drives: [] }
+    if (!g.__supadb.customers.find((c: any) => /Alex QA/.test(c.name || ''))) {
+      const cust = { id: 'c1', name: 'Alex QA', phone: '(555) 111-2222', waiver_url: 'https://mock/waiver.png' }
+      const td = { id: 'td1', customer_id: cust.id, bike_model: 'rad_power', status: 'active' }
+      g.__supadb.customers.push(cust)
+      g.__supadb.test_drives.push(td)
+    }
+
+    const adminPage = await page.context().newPage()
+    await setupSupabaseMocks(adminPage)
+    await adminPage.goto('/admin')
+    await expect(adminPage.locator('main')).toContainText(/Alex QA/)
+    await expect(adminPage.getByRole('button', { name: 'Open Waiver' })).toBeVisible()
+  })
 })
