@@ -24,5 +24,5 @@
   - button "Clear"
   - button "Back"
   - button "Continue" [disabled]
-- alert
+- alert: Create Next App
 ```

@@ -22,5 +22,5 @@
   - text: Email Address (optional)
   - textbox "Email Address (optional)": invalid
   - button "Choose Your Bike"
-- alert
+- alert: San Diego Electric Bike
 ```

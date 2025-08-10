@@ -49,15 +49,15 @@ test('queue submit offline then retry online leads to single record', async ({ p
     await page.mouse.move(box.x + 5, box.y + 5)
     await page.mouse.down(); await page.mouse.up()
   }
-  await page.getByRole('button', { name: /^Continue$/ }).click()
+  await page.getByTestId('verification-continue').click()
 
   ;(page as any).__setOffline(true)
   page.on('dialog', async d => { await d.dismiss() })
-  await page.getByRole('button', { name: 'Start Test Ride' }).click()
+  await page.getByTestId('start-test-ride').click()
   // App shows alert on error; verify we remained on the page
-  await expect(page.getByText('Test Ride Started!', { exact: false })).not.toBeVisible({ timeout: 2000 })
+  await expect(page.getByTestId('success-title')).not.toBeVisible({ timeout: 2000 })
 
   ;(page as any).__setOffline(false)
-  await page.getByRole('button', { name: 'Start Test Ride' }).click()
-  await expect(page.getByText('Test Ride Started!', { exact: false })).toBeVisible()
+  await page.getByTestId('start-test-ride').click()
+  await expect(page.getByTestId('success-title')).toBeVisible()
 })

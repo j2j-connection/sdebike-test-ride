@@ -29,7 +29,7 @@ test('XSS strings are escaped in Admin card', async ({ page }) => {
     await page.mouse.move(box.x + 5, box.y + 5)
     await page.mouse.down(); await page.mouse.up()
   }
-  await page.getByRole('button', { name: /^Continue$/ }).click()
+  await page.getByTestId('verification-continue').click()
   await page.getByRole('button', { name: 'Start Test Ride' }).click()
 
   const admin = await page.context().newPage()

@@ -96,8 +96,8 @@ async function completeFlow(page) {
 
   await page.getByRole('button', { name: /^Continue$/ }).click()
 
-  await page.getByRole('button', { name: 'Start Test Ride' }).click()
-  await expect(page.getByText('Test Ride Started!', { exact: false })).toBeVisible()
+  await page.getByTestId('start-test-ride').click()
+  await expect(page.getByTestId('success-title')).toBeVisible()
 }
 
 test.describe('Happy Path', () => {
