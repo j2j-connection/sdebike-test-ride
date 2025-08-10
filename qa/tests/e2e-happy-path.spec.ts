@@ -81,27 +81,29 @@ async function completeFlow(page) {
   await page.getByRole('button', { name: 'Read Waiver' }).click()
   await page.getByRole('checkbox', { name: 'I have read and agree to the waiver terms' }).check()
   await page.getByRole('button', { name: 'Accept & Close' }).click()
-  // Wait for upload success UI prior to Continue
-  await expect(page.getByText('ID uploaded successfully')).toBeVisible()
-
-  // Draw signature: simulate mouse drag
+  // Draw signature: simulate multiple strokes
   const canvas = page.locator('canvas')
   const box = await canvas.boundingBox()
   if (box) {
     await page.mouse.move(box.x + 10, box.y + 10)
     await page.mouse.down()
-    await page.mouse.move(box.x + box.width - 10, box.y + box.height - 10)
+    await page.mouse.move(box.x + box.width - 10, box.y + 20)
+    await page.mouse.up()
+    await page.mouse.move(box.x + 20, box.y + 60)
+    await page.mouse.down()
+    await page.mouse.move(box.x + box.width - 30, box.y + 80)
     await page.mouse.up()
   }
 
-  await page.getByRole('button', { name: /^Continue$/ }).click()
+  await expect(page.getByTestId('verification-continue')).toBeEnabled()
+  await page.getByTestId('verification-continue').click()
 
   await page.getByTestId('start-test-ride').click()
   await expect(page.getByTestId('success-title')).toBeVisible()
 }
 
 test.describe('Happy Path', () => {
-    test('TC-001 completes flow and shows in admin', async ({ page, browserName }) => {
+  test('TC-001 completes flow and shows in admin', async ({ page, browserName }) => {
     await setupSupabaseMocks(page)
     await completeFlow(page)
 

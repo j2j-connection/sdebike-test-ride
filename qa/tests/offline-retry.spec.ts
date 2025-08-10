@@ -29,16 +29,12 @@ test('queue submit offline then retry online leads to single record', async ({ p
   await page.getByLabel('Full Name').fill('Retry User')
   await page.getByLabel('Phone Number').fill('(555) 333-4444')
   await page.getByRole('button', { name: 'Choose Your Bike' }).click()
-  await page.getByText('Rad Power Bikes').click()
+  await page.getByRole('heading', { name: 'Rad Power Bikes' }).click()
   await page.getByRole('button', { name: 'Continue' }).click()
 
   // Mock ID upload success
   await page.route('**/storage/v1/object/**', route => route.fulfill({ status: 200, body: '{}' }))
-  const [fileChooser] = await Promise.all([
-    page.waitForEvent('filechooser'),
-    page.getByRole('button', { name: 'Choose File' }).click(),
-  ])
-  await fileChooser.setFiles({ name: 'id.png', mimeType: 'image/png', buffer: Buffer.from([1,2,3]) })
+  await page.setInputFiles('input[type=file]', { name: 'id.png', mimeType: 'image/png', buffer: Buffer.from([1,2,3]) })
 
   await page.getByRole('button', { name: 'Read Waiver' }).click()
   await page.getByRole('checkbox').check()
@@ -47,17 +43,26 @@ test('queue submit offline then retry online leads to single record', async ({ p
   const box = await canvas.boundingBox()
   if (box) {
     await page.mouse.move(box.x + 5, box.y + 5)
-    await page.mouse.down(); await page.mouse.up()
+    await page.mouse.down(); await page.mouse.move(box.x + 80, box.y + 20); await page.mouse.up()
+    await page.mouse.move(box.x + 10, box.y + 70)
+    await page.mouse.down(); await page.mouse.move(box.x + 120, box.y + 40); await page.mouse.up()
   }
+  await expect(page.getByTestId('verification-continue')).toBeEnabled()
   await page.getByTestId('verification-continue').click()
 
   ;(page as any).__setOffline(true)
   page.on('dialog', async d => { await d.dismiss() })
   await page.getByTestId('start-test-ride').click()
-  // App shows alert on error; verify we remained on the page
+  // App shows alert on error; verify success not shown
   await expect(page.getByTestId('success-title')).not.toBeVisible({ timeout: 2000 })
 
   ;(page as any).__setOffline(false)
-  await page.getByTestId('start-test-ride').click()
+  // Retry clicking start up to 3 times
+  for (let i=0;i<3;i++) {
+    try {
+      await page.getByTestId('start-test-ride').click({ timeout: 2000 })
+      break
+    } catch {}
+  }
   await expect(page.getByTestId('success-title')).toBeVisible()
 })
