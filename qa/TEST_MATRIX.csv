@@ -1,0 +1,11 @@
+ID,Title,Area,Steps,Expected,Status,Actual
+TC-001,Full flow happy path,Functional,"contact->brand->upload ID->waiver agree->sign->confirm->start","Customer+TestDrive created; Admin shows card with waiver_url, submission_ip, submitted_at; can complete",TODO,
+TC-002,Resume interrupted flow,Functional,"refresh at each step","No duplicate records; state persists or prompts gracefully",TODO,
+VAL-001,Required field validation,Validation,"submit empty contact","Errors for name/phone; invalid email caught",TODO,
+VAL-002,Signature edge cases,Validation,"empty canvas; 1px dot; mouse vs touch","Continue disabled until valid signature",TODO,
+VAL-003,ID upload constraints,Validation,"deny camera; >max size; HEIC; EXIF","Proper error messages; accepted types only",TODO,
+SEC-001,XSS harmless,Security,"enter <script> in name; view Admin","No script execution; escaped display",TODO,
+SEC-002,IDOR blocked,Security,"attempt fetch other waiver/test_drive","Access denied or unguessable URLs",TODO,
+PERF-001,First render perf,Performance,"throttled 4G load /","TTI <2s; no long tasks >200ms",TODO,
+A11Y-001,Keyboard/focus/aria,Accessibility,"keyboard-only across flow","Proper focus order, visible focus, labels, aria-live",TODO,
+SUPA-001,RLS anonymous inserts only,Supabase,"unauth read on customers/test_drives","Denied; only inserts allowed",TODO,

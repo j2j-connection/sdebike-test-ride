@@ -71,7 +71,7 @@ export default function SuccessScreen({ testDrive, customer, onStartOver }: Succ
           >
             <CheckCircle className="w-10 h-10 text-white" />
           </motion.div>
-          <CardTitle className="text-3xl font-bold text-slate-800">Test Ride Started!</CardTitle>
+          <CardTitle data-testid="success-title" className="text-3xl font-bold text-slate-800">Test Ride Started!</CardTitle>
           <p className="text-slate-600 mt-2 text-lg">Enjoy your electric bike experience</p>
         </CardHeader>
         

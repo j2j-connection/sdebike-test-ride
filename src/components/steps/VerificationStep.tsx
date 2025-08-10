@@ -260,23 +260,23 @@ export default function VerificationStep({ data, onUpdate, onNext, onBack }: Ver
                 <CreditCard className="w-3 h-3" />
                 Photo ID Upload <span className="text-red-500">*</span>
               </Label>
-              <div className="border-2 border-dashed border-slate-300 rounded-lg p-3 text-center">
+              <div className="border-2 border-dashed border-slate-300 rounded-lg p-3 text-center" aria-live="polite">
                 {uploadStatus === "success" ? (
-                  <div className="space-y-1">
+                  <div className="space-y-1" data-testid="id-upload-success">
                     <div className="w-6 h-6 mx-auto bg-green-100 rounded-full flex items-center justify-center">
                       <Check className="w-3 h-3 text-green-600" />
                     </div>
                     <p className="text-green-600 font-medium text-xs">ID uploaded successfully</p>
                   </div>
                 ) : uploadStatus === "uploading" ? (
-                  <div className="space-y-1">
+                  <div className="space-y-1" data-testid="id-uploading">
                     <div className="w-6 h-6 mx-auto bg-lime-100 rounded-full flex items-center justify-center">
                       <div className="w-3 h-3 border-2 border-lime-600 border-t-transparent rounded-full animate-spin" />
                     </div>
                     <p className="text-lime-600 text-xs">Uploading...</p>
                   </div>
                 ) : uploadStatus === "failed" ? (
-                  <div className="space-y-1">
+                  <div className="space-y-1" data-testid="id-upload-failed">
                     <div className="w-6 h-6 mx-auto bg-red-100 rounded-full flex items-center justify-center">
                       <AlertCircle className="w-3 h-3 text-red-600" />
                     </div>
@@ -287,14 +287,14 @@ export default function VerificationStep({ data, onUpdate, onNext, onBack }: Ver
                     </Button>
                   </div>
                 ) : (
-                  <div className="space-y-1">
+                  <div className="space-y-1" data-testid="id-upload-empty">
                     <Upload className="w-5 h-5 mx-auto text-slate-400" />
                     <div>
                       <p className="font-medium text-slate-700 text-xs">Upload a photo of your ID</p>
                       <p className="text-xs text-slate-500">Driver's license, passport, or state ID</p>
                     </div>
-                    <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" id="id-upload" />
-                    <Button type="button" variant="outline" size="sm" onClick={() => document.getElementById('id-upload')?.click()}>
+                    <input data-testid="id-file-input" type="file" accept="image/*" onChange={handleFileUpload} className="hidden" id="id-upload" />
+                    <Button data-testid="id-choose-file" type="button" variant="outline" size="sm" onClick={() => document.getElementById('id-upload')?.click()}>
                       Choose File
                     </Button>
                   </div>
@@ -307,7 +307,7 @@ export default function VerificationStep({ data, onUpdate, onNext, onBack }: Ver
                 <AlertCircle className="h-3 w-3" />
                 <AlertDescription className="text-xs">You must read and agree to the waiver and provide a signature to continue.</AlertDescription>
               </Alert>
-              <Button type="button" variant="outline" size="sm" onClick={() => setIsWaiverOpen(true)}>
+              <Button type="button" variant="outline" size="sm" onClick={() => setIsWaiverOpen(true)} data-testid="open-waiver">
                 Read Waiver
               </Button>
               {formData.waiver_signed && (
@@ -345,6 +345,7 @@ export default function VerificationStep({ data, onUpdate, onNext, onBack }: Ver
                 Back
               </Button>
               <Button 
+                data-testid="verification-continue"
                 type="submit" 
                 disabled={!formData.id_photo_url || !formData.waiver_signed || !formData.signature_data} 
                 className="flex-1 h-10 font-semibold bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 disabled:opacity-50"

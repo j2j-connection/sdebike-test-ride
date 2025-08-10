@@ -24,6 +24,7 @@ interface ConfirmationStepProps {
 
 export default function ConfirmationStep({ data, onComplete, onBack }: ConfirmationStepProps) {
   const [isStarting, setIsStarting] = useState(false)
+  const isE2E = process.env.NEXT_PUBLIC_E2E === 'true'
 
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
@@ -37,7 +38,9 @@ export default function ConfirmationStep({ data, onComplete, onBack }: Confirmat
 
   const handleStartTestDrive = async () => {
     setIsStarting(true)
-    await new Promise(resolve => setTimeout(resolve, 1500))
+    if (!isE2E) {
+      await new Promise(resolve => setTimeout(resolve, 1500))
+    }
     
     const driveData = {
       ...data,
@@ -101,6 +104,7 @@ export default function ConfirmationStep({ data, onComplete, onBack }: Confirmat
           Back
         </Button>
         <Button 
+          data-testid="start-test-ride"
           onClick={handleStartTestDrive}
           disabled={isStarting}
           className="flex-1 h-11 font-semibold bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
