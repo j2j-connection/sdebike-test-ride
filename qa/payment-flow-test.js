@@ -434,7 +434,7 @@ if (urlIndex !== -1 && process.argv[urlIndex + 1]) {
   TEST_CONFIG.baseUrl = process.argv[urlIndex + 1];
 }
 
-const timeoutIndex = process.argv.indexOf('--url');
+const timeoutIndex = process.argv.indexOf('--timeout');
 if (timeoutIndex !== -1 && process.argv[timeoutIndex + 1]) {
   TEST_CONFIG.timeout = parseInt(process.argv[timeoutIndex + 1]);
 }
