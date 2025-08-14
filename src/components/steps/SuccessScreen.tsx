@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { CheckCircle, Clock, MapPin, MessageSquare, RefreshCw } from "lucide-react"
+import { CheckCircle, Clock, MapPin, MessageSquare, RefreshCw, AlertCircle } from "lucide-react"
 import { motion } from "framer-motion"
 
 interface SuccessScreenProps {
@@ -24,6 +24,23 @@ interface SuccessScreenProps {
 
 export default function SuccessScreen({ testDrive, customer, onStartOver }: SuccessScreenProps) {
   const [smsStatus, setSmsStatus] = useState<'sending' | 'sent' | 'failed'>('sending')
+
+  // Defensive programming: handle missing data gracefully
+  if (!testDrive || !customer) {
+    console.error('SuccessScreen: Missing required data:', { testDrive, customer })
+    return (
+      <div className="w-full p-6 bg-white rounded-lg shadow">
+        <div className="text-center space-y-4">
+          <AlertCircle className="w-12 h-12 text-red-500 mx-auto" />
+          <h2 className="text-xl font-semibold text-red-700">Missing Data</h2>
+          <p className="text-gray-600">Test ride data is incomplete. Please start over.</p>
+          <Button onClick={onStartOver} className="w-full">
+            Start Over
+          </Button>
+        </div>
+      </div>
+    )
+  }
 
   useEffect(() => {
     if (testDrive && customer) {

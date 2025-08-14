@@ -1,0 +1,36 @@
+Test ID,Category,Test Case,Priority,Status,Notes
+TC-001,Functional,User Registration - Complete Flow,High,Pending,Test entire signup process from start to finish
+TC-002,Functional,Bike Selection - Model Selection,High,Pending,Verify bike model data is captured correctly
+TC-003,Functional,ID Photo Upload - Valid Image,High,Pending,Test successful image upload to Supabase Storage
+TC-004,Functional,Digital Waiver - Signature Capture,High,Pending,Test signature drawing and waiver generation
+TC-005,Functional,Payment Authorization - Stripe Integration,High,Pending,Test $1 pre-authorization hold
+TC-006,Functional,Admin Dashboard - View Records,High,Pending,Verify admin can see test drive data
+TC-007,Validation,Required Field Validation,Medium,Pending,Test form validation for all required fields
+TC-008,Validation,File Upload - Invalid Format,Medium,Pending,Test rejection of non-image files
+TC-009,Validation,Payment - Declined Card,Medium,Pending,Test handling of failed payment attempts
+TC-010,Validation,Session - Browser Refresh,Medium,Pending,Test form data persistence across refresh
+TC-011,Security,HTTPS Enforcement,High,Pending,Verify all connections use HTTPS
+TC-012,Security,File Upload - Malicious Files,High,Pending,Test file type validation and security
+TC-013,Security,RLS Policies - Data Access,High,Pending,Verify Supabase row-level security
+TC-014,Security,Payment - PCI Compliance,High,Pending,Verify Stripe handles sensitive data
+TC-015,Security,Input Sanitization - XSS Prevention,Medium,Pending,Test XSS vulnerability prevention
+TC-016,Performance,Page Load - Initial Render,Medium,Pending,Measure time to first contentful paint
+TC-017,Performance,API Response - Supabase Queries,Medium,Pending,Measure database query response times
+TC-018,Performance,File Upload - Large Images,Medium,Pending,Test upload performance with large files
+TC-019,Performance,Navigation - Step Transitions,Low,Pending,Measure time between form steps
+TC-020,Performance,Memory Usage - Component Lifecycle,Low,Pending,Monitor memory usage during navigation
+TC-021,Accessibility,Screen Reader - ARIA Labels,Medium,Pending,Test with screen reader software
+TC-022,Accessibility,Keyboard Navigation - Tab Order,Medium,Pending,Verify logical tab navigation
+TC-023,Accessibility,Color Contrast - WCAG AA,Medium,Pending,Test color contrast ratios
+TC-024,Accessibility,Mobile - Touch Targets,Medium,Pending,Verify adequate touch target sizes
+TC-025,Accessibility,Forms - Error Messages,Low,Pending,Test accessibility of validation messages
+TC-026,Integration,Supabase - Database CRUD,High,Pending,Test all database operations
+TC-027,Integration,Supabase - Storage Operations,High,Pending,Test file upload/download
+TC-028,Integration,Supabase - RLS Enforcement,High,Pending,Verify security policies work
+TC-029,Integration,Stripe - Payment Intent Creation,High,Pending,Test server-side payment setup
+TC-030,Integration,Stripe - Client-side Payment,High,Pending,Test payment element rendering
+TC-031,Edge Cases,Network Failure - Upload Interruption,Medium,Pending,Test handling of network issues
+TC-032,Edge Cases,Payment Timeout - Session Expiry,Medium,Pending,Test payment session handling
+TC-033,Edge Cases,File Size - Maximum Limits,Medium,Pending,Test file size restrictions
+TC-034,Edge Cases,Browser Compatibility - Multiple Browsers,Low,Pending,Test across Chrome, Firefox, Safari
+TC-035,Edge Cases,Mobile Devices - Responsive Design,Low,Pending,Test on various mobile screen sizes

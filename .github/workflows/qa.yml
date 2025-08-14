@@ -1,0 +1,387 @@
+name: SDEBIKE Test Ride App - QA Workflow
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to test'
+        required: true
+        default: 'development'
+        type: choice
+        options:
+        - development
+        - staging
+        - production
+
+env:
+  NODE_VERSION: '18'
+  NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+  SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
+  STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+
+jobs:
+  # Code Quality Checks
+  code-quality:
+    name: Code Quality & Security
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Run TypeScript check
+        run: npm run type-check
+
+      - name: Run security audit
+        run: npm audit --audit-level=moderate
+
+      - name: Check for secrets in code
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: .
+          base: HEAD~1
+
+  # Build & Test
+  build-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    needs: code-quality
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+
+      - name: Run automated tests
+        run: node qa/test-execution.js
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: qa/
+          retention-days: 30
+
+  # Accessibility Testing
+  accessibility:
+    name: Accessibility Testing
+    runs-on: ubuntu-latest
+    needs: build-test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+
+      - name: Start application
+        run: npm start &
+        env:
+          PORT: 3000
+
+      - name: Wait for application
+        run: |
+          timeout 60 bash -c 'until curl -f http://localhost:3000; do sleep 2; done'
+
+      - name: Run accessibility tests
+        run: |
+          npm install -g axe-core
+          node -e "
+            const axe = require('axe-core');
+            const puppeteer = require('puppeteer');
+            
+            (async () => {
+              const browser = await puppeteer.launch();
+              const page = await browser.newPage();
+              await page.goto('http://localhost:3000');
+              
+              const results = await axe.analyze(page);
+              console.log('Accessibility violations:', results.violations.length);
+              
+              if (results.violations.length > 0) {
+                console.log('Violations:', JSON.stringify(results.violations, null, 2));
+                process.exit(1);
+              }
+              
+              await browser.close();
+            })();
+          "
+
+  # Performance Testing
+  performance:
+    name: Performance Testing
+    runs-on: ubuntu-latest
+    needs: build-test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+
+      - name: Start application
+        run: npm start &
+        env:
+          PORT: 3000
+
+      - name: Wait for application
+        run: |
+          timeout 60 bash -c 'until curl -f http://localhost:3000; do sleep 2; done'
+
+      - name: Run Lighthouse CI
+        run: |
+          npm install -g @lhci/cli
+          lhci autorun
+
+  # Security Testing
+  security:
+    name: Security Testing
+    runs-on: ubuntu-latest
+    needs: build-test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run OWASP ZAP security scan
+        uses: zaproxy/action-full-scan@v0.8.0
+        with:
+          target: 'http://localhost:3000'
+          rules_file_name: '.zap/rules.tsv'
+          cmd_options: '-a'
+
+      - name: Upload security scan results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: security-scan-results
+          path: .zap/
+          retention-days: 90
+
+  # Integration Testing
+  integration:
+    name: Integration Testing
+    runs-on: ubuntu-latest
+    needs: build-test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup test database
+        run: node setup-database.js
+        env:
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+
+      - name: Run integration tests
+        run: |
+          # Test Supabase connection
+          node -e "
+            const { createClient } = require('@supabase/supabase-js');
+            const client = createClient(
+              process.env.NEXT_PUBLIC_SUPABASE_URL,
+              process.env.SUPABASE_SERVICE_ROLE_KEY
+            );
+            
+            (async () => {
+              try {
+                const { data, error } = await client.from('customers').select('count').limit(1);
+                if (error) throw error;
+                console.log('✅ Supabase connection successful');
+              } catch (err) {
+                console.error('❌ Supabase connection failed:', err.message);
+                process.exit(1);
+              }
+            })();
+          "
+
+      - name: Test Stripe integration
+        run: |
+          # Test Stripe payment intent creation
+          node -e "
+            const Stripe = require('stripe');
+            const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+            
+            (async () => {
+              try {
+                const paymentIntent = await stripe.paymentIntents.create({
+                  amount: 100,
+                  currency: 'usd',
+                  automatic_payment_methods: { enabled: true },
+                  metadata: { test: 'true' }
+                });
+                console.log('✅ Stripe integration successful');
+                console.log('Payment Intent ID:', paymentIntent.id);
+              } catch (err) {
+                console.error('❌ Stripe integration failed:', err.message);
+                process.exit(1);
+              }
+            })();
+          "
+
+  # Report Generation
+  report:
+    name: Generate QA Report
+    runs-on: ubuntu-latest
+    needs: [code-quality, build-test, accessibility, performance, security, integration]
+    if: always()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+
+      - name: Generate comprehensive report
+        run: |
+          echo "# SDEBIKE Test Ride App - QA Report" > qa-report.md
+          echo "Generated: $(date)" >> qa-report.md
+          echo "" >> qa-report.md
+          
+          echo "## Test Results Summary" >> qa-report.md
+          echo "" >> qa-report.md
+          
+          if [ -f "artifacts/test-results/test-execution.js" ]; then
+            echo "✅ Automated tests completed" >> qa-report.md
+          else
+            echo "❌ Automated tests failed" >> qa-report.md
+          fi
+          
+          if [ -f "artifacts/security-scan-results" ]; then
+            echo "✅ Security scan completed" >> qa-report.md
+          else
+            echo "❌ Security scan failed" >> qa-report.md
+          fi
+          
+          echo "" >> qa-report.md
+          echo "## Next Steps" >> qa-report.md
+          echo "1. Review failed tests and fix issues" >> qa-report.md
+          echo "2. Address security vulnerabilities" >> qa-report.md
+          echo "3. Fix accessibility violations" >> qa-report.md
+          echo "4. Optimize performance issues" >> qa-report.md
+
+      - name: Upload QA report
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-report
+          path: qa-report.md
+          retention-days: 30
+
+      - name: Comment on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('qa-report.md', 'utf8');
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## QA Report\n\n${report}`
+            });
+
+  # Deployment (Production only)
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [code-quality, build-test, accessibility, performance, security, integration]
+    if: 
+      github.ref == 'refs/heads/main' && 
+      github.event_name == 'push' &&
+      needs.code-quality.result == 'success' &&
+      needs.build-test.result == 'success' &&
+      needs.accessibility.result == 'success' &&
+      needs.performance.result == 'success' &&
+      needs.security.result == 'success' &&
+      needs.integration.result == 'success'
+    environment: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          working-directory: ./
+          vercel-args: '--prod'

@@ -5,6 +5,7 @@ import { AnimatePresence } from "framer-motion"
 import ContactStep from "@/components/steps/ContactStep"
 import BikeSelectionStep from "@/components/steps/BikeSelectionStep"
 import VerificationStep from "@/components/steps/VerificationStep"
+import PaymentStep from "@/components/PaymentStep"
 import ConfirmationStep from "@/components/steps/ConfirmationStep"
 import SuccessScreen from "@/components/steps/SuccessScreen"
 
@@ -32,7 +33,8 @@ const STEPS = [
   { id: 1, name: "Contact Info", component: ContactStep },
   { id: 2, name: "Bike Selection", component: BikeSelectionStep },
   { id: 3, name: "Verification", component: VerificationStep },
-  { id: 4, name: "Confirmation", component: ConfirmationStep }
+  { id: 4, name: "Payment", component: PaymentStep },
+  { id: 5, name: "Confirmation", component: ConfirmationStep }
 ]
 
 export default function TestDriveWidget() {
@@ -45,10 +47,12 @@ export default function TestDriveWidget() {
   }
 
   const handleNext = () => {
+    console.log(`Moving from step ${currentStep} to step ${currentStep + 1}`)
     setCurrentStep(prev => Math.min(prev + 1, STEPS.length))
   }
 
   const handleBack = () => {
+    console.log(`Moving from step ${currentStep} to step ${currentStep - 1}`)
     setCurrentStep(prev => Math.max(prev - 1, 1))
   }
 
@@ -57,24 +61,32 @@ export default function TestDriveWidget() {
       console.log("Current formData:", formData)
       console.log("Drive data passed:", driveData)
       
+      // Use the driveData passed from ConfirmationStep if available
+      const finalData = {
+        ...formData,
+        ...driveData
+      }
+      
+      console.log("Final combined data:", finalData)
+      
       const { testDriveService } = await import("@/lib/services/testDriveService")
       
       const createData = {
         customer: {
-          name: formData.name!,
-          phone: formData.phone!,
-          email: formData.email,
-          id_photo_url: formData.id_photo_url!,
-          signature_data: formData.signature_data!,
-          waiver_url: formData.waiver_url,
-          waiver_signed: formData.waiver_signed!,
-          submission_ip: formData.submission_ip,
-          submitted_at: formData.submitted_at || new Date().toISOString()
+          name: finalData.name!,
+          phone: finalData.phone!,
+          email: finalData.email,
+          id_photo_url: finalData.id_photo_url!,
+          signature_data: finalData.signature_data!,
+          waiver_url: finalData.waiver_url,
+          waiver_signed: finalData.waiver_signed!,
+          submission_ip: finalData.submission_ip,
+          submitted_at: finalData.submitted_at || new Date().toISOString()
         },
         testDrive: {
-          bike_model: formData.bike_model!,
-          start_time: formData.start_time!,
-          end_time: new Date(formData.start_time!.getTime() + (formData.duration_hours! * 60 * 60 * 1000))
+          bike_model: finalData.bike_model!,
+          start_time: finalData.start_time!,
+          end_time: finalData.end_time || new Date(finalData.start_time!.getTime() + (finalData.duration_hours! * 60 * 60 * 1000))
         }
       }
       
@@ -127,13 +139,15 @@ export default function TestDriveWidget() {
     </div>
   )
 
-  if (currentStep === 5) {
+  // Render success screen only after completion
+  if (completedData) {
+    console.log("Rendering SuccessScreen with completedData:", completedData)
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-yellow-50 p-2">
         <div className="max-w-md mx-auto">
           <SuccessScreen 
-            testDrive={completedData?.testDrive}
-            customer={completedData?.customer}
+            testDrive={completedData.testDrive}
+            customer={completedData.customer}
             onStartOver={handleStartOver}
           />
         </div>
@@ -141,6 +155,7 @@ export default function TestDriveWidget() {
     )
   }
 
+  // Render current step component
   const CurrentStepComponent = STEPS[currentStep - 1].component
 
   return (

@@ -138,19 +138,46 @@ export const testDriveService = {
   },
 
   async sendNotification(customerId: string, phone: string, message: string, messageType: string): Promise<void> {
-    const { error } = await supabase
-      .from('notifications')
-      .insert({
-        customer_id: customerId,
-        customer_phone: phone,
-        message_content: message,
-        message_type: messageType,
-        sent_at: new Date().toISOString()
+    try {
+      // First, try to send the SMS via Twilio
+      const response = await fetch('/api/test-twilio', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          phone,
+          testType: 'custom',
+          message
+        }),
       })
 
-    if (error) {
-      console.error('Error logging notification:', error)
-      throw new Error('Failed to log notification')
+      const data = await response.json()
+      
+      // Log the notification to the database
+      const { error } = await supabase
+        .from('notifications')
+        .insert({
+          customer_id: customerId,
+          customer_phone: phone,
+          message_content: message,
+          message_type: messageType,
+          sent_at: new Date().toISOString(),
+          delivery_status: data.success ? 'sent' : 'failed'
+        })
+
+      if (error) {
+        console.error('Error logging notification:', error)
+        throw new Error('Failed to log notification')
+      }
+
+      // If SMS failed, log the error
+      if (!data.success) {
+        console.error('SMS delivery failed:', data.error)
+      }
+    } catch (error) {
+      console.error('Error in sendNotification:', error)
+      throw new Error('Failed to send notification')
     }
   }
 }
