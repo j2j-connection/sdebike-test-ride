@@ -6,11 +6,12 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Loader2, CreditCard, Shield } from 'lucide-react'
+import { PaymentIntent } from '@stripe/stripe-js'
 
 interface PaymentFormProps {
   clientSecret: string
-  onSuccess: (paymentIntent: any) => void
-  onError: (error: string) => void
+  onSuccess: (paymentIntent: PaymentIntent) => void
+  onError: (message: string) => void
   userEmail?: string
   userName?: string
 }
@@ -156,11 +157,9 @@ export default function PaymentForm({ clientSecret, onSuccess, onError, userEmai
         </div>
         <CardTitle className="text-xl">Payment Authorization</CardTitle>
         <CardDescription>
-          We'll place a $1 authorization hold on your card to verify your identity.
+          We&apos;ll place a $1 authorization hold on your card to verify your identity.
           <br />
           <span className="text-sm text-gray-500">No charges will be made.</span>
-          <br />
-          <span className="text-sm text-green-600 font-medium">✓ Apple Pay & Google Pay supported</span>
         </CardDescription>
       </CardHeader>
       
@@ -251,19 +250,6 @@ export default function PaymentForm({ clientSecret, onSuccess, onError, userEmai
             </p>
           )}
 
-          <div className="text-xs text-gray-500 text-center space-y-1">
-            <p>🔒 Your payment information is secure</p>
-            <p>💳 We accept Visa, Mastercard, American Express</p>
-            <p>📱 Apple Pay and Google Pay supported</p>
-            <p>⚡ Fast checkout with digital wallets</p>
-            <div className="mt-2 p-2 bg-blue-50 rounded border border-blue-200">
-              <p className="text-xs text-blue-700 font-medium">ℹ️ Apple Pay & Google Pay Info:</p>
-              <p className="text-xs text-blue-600">• Requires HTTPS (won't work on localhost)</p>
-              <p className="text-xs text-blue-600">• Domain must be verified with Stripe</p>
-              <p className="text-xs text-blue-600">• Device must have wallet configured</p>
-              <p className="text-xs text-green-600 font-medium mt-1">✅ Will work in production!</p>
-            </div>
-          </div>
         </form>
       </CardContent>
     </Card>

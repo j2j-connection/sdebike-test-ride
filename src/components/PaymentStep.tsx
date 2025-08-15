@@ -1,22 +1,29 @@
 "use client"
 
-import * as React from "react"
 import { useState, useEffect } from "react"
 import { loadStripe } from "@stripe/stripe-js"
 import { Elements } from "@stripe/react-stripe-js"
 import PaymentForm from "./PaymentForm"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { PaymentIntent } from "@stripe/stripe-js"
 import { Loader2, CreditCard, AlertCircle } from "lucide-react"
 
 // Load Stripe outside of component to avoid recreating on every render
 const stripePromise = loadStripe('pk_test_51Rvs8dA3dzhvH5fqqf7IbHqXBU0OOfQcN7ozQ7GQtHrxF2tV0oXTHUqicBvGN6PDmI2ovkzw5nxAHXPX38fn6q7q00qR3C1dLh')
 
 interface PaymentStepProps {
-  data: any
-  onUpdate: (data: any) => void
+  data: {
+    name: string
+    email: string
+    phone: string
+    bike_model: string
+    start_time: Date
+    duration_hours: number
+  }
   onNext: () => void
   onBack: () => void
+  onUpdate: (data: { payment_intent_id: string; payment_status: string }) => void
 }
 
 export default function PaymentStep({ data, onUpdate, onNext, onBack }: PaymentStepProps) {
@@ -61,7 +68,7 @@ export default function PaymentStep({ data, onUpdate, onNext, onBack }: PaymentS
     }
   }
 
-  const handlePaymentSuccess = (paymentIntent: any) => {
+  const handlePaymentSuccess = (paymentIntent: PaymentIntent) => {
     onUpdate({ 
       payment_intent_id: paymentIntent.id, 
       payment_status: 'completed' 
@@ -69,12 +76,9 @@ export default function PaymentStep({ data, onUpdate, onNext, onBack }: PaymentS
     onNext()
   }
 
-  const handlePaymentError = (errorMessage: string) => {
-    setError(errorMessage)
-    onUpdate({ 
-      payment_intent_id: null, 
-      payment_status: 'failed' 
-    })
+  const handlePaymentError = (message: string) => {
+    setError(message)
+    setClientSecret("")
   }
 
   const handleTestPayment = () => {
