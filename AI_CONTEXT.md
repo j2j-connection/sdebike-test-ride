@@ -241,27 +241,28 @@ if (confirmError.type === 'card_error') {
 
 ## 📱 SMS INTEGRATION
 
-### Provider-Agnostic SMS Service
-The application uses a flexible SMS service that can switch between providers:
+### TextBelt SMS Service (Current Implementation)
+The application currently uses TextBelt for SMS functionality:
 
-#### **TextBelt Provider (Development)**
+#### **TextBelt Provider**
 - **Purpose**: Development and testing SMS functionality
-- **Configuration**: `TEXTBELT_API_KEY` in environment
+- **Configuration**: `NEXT_PUBLIC_TEXTBELT_API_KEY` in environment
 - **Cost**: Free tier available for testing
 - **Features**: Simple REST API, no account setup required
+- **Browser Support**: ✅ Fully browser-compatible
 
-#### **Twilio Provider (Production)**
-- **Purpose**: Production SMS delivery
-- **Configuration**: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_PHONE_NUMBER`
+#### **Twilio Provider (Future)**
+- **Purpose**: Production SMS delivery (to be implemented)
+- **Configuration**: Will use `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_PHONE_NUMBER`
 - **Features**: Professional SMS delivery, delivery receipts, webhooks
 
 ### Environment Variables
 ```bash
 # SMS Provider Selection
-SMS_PROVIDER=textbelt  # 'textbelt' | 'twilio'
+SMS_PROVIDER=textbelt  # Currently only 'textbelt' supported
 
 # TextBelt Configuration
-TEXTBELT_API_KEY=your_textbelt_api_key
+NEXT_PUBLIC_TEXTBELT_API_KEY=your_textbelt_api_key
 
 # Twilio Configuration (when ready)
 TWILIO_ACCOUNT_SID=your_twilio_account_sid
@@ -284,23 +285,27 @@ const provider = smsService.getCurrentProvider()
 const configured = smsService.isConfigured()
 ```
 
-### Switching Providers
-```typescript
-// Switch to Twilio when ready
-smsService.setProvider('twilio')
-
-// Or set environment variable
-process.env.SMS_PROVIDER = 'twilio'
-```
+### Current Implementation Status
+- **✅ TextBelt**: Fully integrated and working
+- **🔄 Twilio**: Ready for future implementation
+- **📱 Browser Support**: No Node.js module conflicts
+- **🧪 Testing**: Test script available (`test-textbelt.js`)
 
 ### Testing SMS Integration
 ```bash
 # Test TextBelt integration
 node test-textbelt.js
 
-# Test with specific provider
-SMS_PROVIDER=textbelt node test-textbelt.js
+# Note: TextBelt free tier has limited quota
+# "Out of quota" error means integration is working correctly
 ```
+
+### Future Twilio Integration
+When ready to switch to Twilio:
+1. **Install Twilio**: `npm install twilio`
+2. **Set environment variables**: TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER
+3. **Update SMS service**: Add Twilio provider implementation
+4. **Switch provider**: Set SMS_PROVIDER=twilio
 
 ## 🚀 PRODUCTION DEPLOYMENT
 

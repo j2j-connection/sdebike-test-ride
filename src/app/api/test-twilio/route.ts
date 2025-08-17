@@ -1,12 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { twilioService } from '@/lib/services/twilioService';
+import { smsService } from '@/lib/services/smsService';
+
+export async function GET(request: NextRequest) {
+  try {
+    // Get SMS service configuration status
+    const configStatus = smsService.getConfigStatus();
+    
+    return NextResponse.json({
+      success: true,
+      message: 'SMS Service Status',
+      config: configStatus,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error getting SMS service status:', error);
+    return NextResponse.json(
+      { error: 'Failed to get SMS service status' },
+      { status: 500 }
+    );
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { phone, message, testType } = body;
-
-    // Validate input
+    const { phone, message, type } = await request.json();
+    
     if (!phone) {
       return NextResponse.json(
         { error: 'Phone number is required' },
@@ -14,99 +32,73 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check Twilio configuration
-    const configStatus = twilioService.getConfigStatus();
-    if (!configStatus.configured) {
-      return NextResponse.json(
-        { 
-          error: 'Twilio not configured',
-          missing: configStatus.missing,
-          message: 'Please set the required environment variables'
-        },
-        { status: 500 }
-      );
-    }
-
-    let smsResponse: any;
-
-    // Handle different test types
-    switch (testType) {
+    let smsResponse;
+    
+    // Send different types of SMS based on the type parameter
+    switch (type) {
       case 'confirmation':
-        smsResponse = await twilioService.sendTestRideConfirmation(
-          phone, 
-          new Date(Date.now() + 10 * 60 * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        smsResponse = await smsService.sendTestRideConfirmation(
+          phone,
+          '2:00 PM',
+          '1234 Electric Ave, San Diego, CA'
         );
         break;
-      
       case 'reminder':
-        smsResponse = await twilioService.sendTestRideReminder(
-          phone, 
-          new Date(Date.now() + 5 * 60 * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        );
+        smsResponse = await smsService.sendTestRideReminder(phone, '2:00 PM');
         break;
-      
       case 'completion':
-        smsResponse = await twilioService.sendTestRideCompletion(phone);
+        smsResponse = await smsService.sendTestRideCompletion(phone);
         break;
-      
-      case 'custom':
-        if (!message) {
-          return NextResponse.json(
-            { error: 'Message is required for custom test type' },
-            { status: 400 }
-          );
-        }
-        smsResponse = await twilioService.sendSMS({
-          to: phone,
-          body: message
-        });
-        break;
-      
       default:
-        return NextResponse.json(
-          { error: 'Invalid test type. Use: confirmation, reminder, completion, or custom' },
-          { status: 400 }
-        );
+        // Send custom message
+        smsResponse = await smsService.sendSMS({
+          to: phone,
+          body: message || 'Test message from SDEBIKE Test Ride App'
+        });
     }
 
-    if (smsResponse.success) {
-      return NextResponse.json({
-        success: true,
-        messageId: smsResponse.messageId,
-        status: smsResponse.status,
-        message: 'SMS sent successfully'
-      });
-    } else {
-      return NextResponse.json(
-        { 
-          success: false, 
-          error: smsResponse.error 
-        },
-        { status: 500 }
-      );
-    }
-
+    return NextResponse.json({
+      success: true,
+      message: 'SMS sent successfully',
+      smsResponse,
+      timestamp: new Date().toISOString()
+    });
   } catch (error) {
-    console.error('Test Twilio API error:', error);
+    console.error('Error sending SMS:', error);
     return NextResponse.json(
-      { 
-        error: 'Internal server error',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      },
+      { error: 'Failed to send SMS' },
       { status: 500 }
     );
   }
 }
 
-export async function GET() {
-  // Return Twilio configuration status
-  const configStatus = twilioService.getConfigStatus();
-  
-  return NextResponse.json({
-    configured: configStatus.configured,
-    missing: configStatus.missing,
-    message: configStatus.configured 
-      ? 'Twilio is properly configured' 
-      : 'Twilio is not configured. Please set the required environment variables.'
-  });
+// Test endpoint for checking SMS service configuration
+export async function PUT(request: NextRequest) {
+  try {
+    const { action } = await request.json();
+    
+    if (action === 'test-config') {
+      const configStatus = smsService.getConfigStatus();
+      
+      return NextResponse.json({
+        success: true,
+        message: 'SMS Service Configuration Test',
+        config: configStatus,
+        provider: smsService.getCurrentProvider(),
+        configured: smsService.isConfigured(),
+        timestamp: new Date().toISOString()
+      });
+    }
+    
+    return NextResponse.json(
+      { error: 'Invalid action' },
+      { status: 400 }
+    );
+  } catch (error) {
+    console.error('Error testing SMS configuration:', error);
+    return NextResponse.json(
+      { error: 'Failed to test SMS configuration' },
+      { status: 500 }
+    );
+  }
 }
