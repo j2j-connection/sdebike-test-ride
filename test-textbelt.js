@@ -10,12 +10,12 @@ async function testTextBelt() {
 
   // Check environment
   console.log('📋 Environment Check:');
-  console.log(`TEXTBELT_API_KEY: ${process.env.TEXTBELT_API_KEY ? '✅ Set' : '❌ Missing'}`);
+  console.log(`NEXT_PUBLIC_TEXTBELT_API_KEY: ${process.env.NEXT_PUBLIC_TEXTBELT_API_KEY ? '✅ Set' : '❌ Missing'}`);
   console.log(`SMS_PROVIDER: ${process.env.SMS_PROVIDER || 'textbelt (default)'}`);
   console.log('');
 
-  if (!process.env.TEXTBELT_API_KEY) {
-    console.log('❌ TEXTBELT_API_KEY not set. Please add it to your .env.local file.');
+  if (!process.env.NEXT_PUBLIC_TEXTBELT_API_KEY) {
+    console.log('❌ NEXT_PUBLIC_TEXTBELT_API_KEY not set. Please add it to your .env.local file.');
     return;
   }
 
@@ -41,7 +41,7 @@ async function testTextBelt() {
       body: JSON.stringify({
         phone: testPhone,
         message: testMessage,
-        key: process.env.TEXTBELT_API_KEY,
+        key: process.env.NEXT_PUBLIC_TEXTBELT_API_KEY,
       }),
     });
 
