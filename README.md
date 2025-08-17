@@ -1,36 +1,141 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🚴‍♂️ SD Electric Bike Test Ride Application
 
-## Getting Started
+A modern, digital solution for managing electric bike test rides at SD Electric Bike. This application replaces the traditional paper-based process with a streamlined digital experience that includes photo ID capture, digital waivers, and secure payment authorization.
 
-First, run the development server:
+## ✨ Features
 
+- **📱 Digital ID Capture**: Take photos of customer IDs instead of holding them physically
+- **✍️ Digital Waivers**: Electronic signature capture with legal compliance
+- **💳 Secure Payments**: $1 authorization hold via Stripe (no charges made)
+- **🍎 Digital Wallets**: Apple Pay and Google Pay support
+- **📊 Admin Dashboard**: Complete test ride history and customer management
+- **📱 Mobile-First Design**: Optimized for tablets and mobile devices
+- **🔒 Secure Storage**: Supabase with Row Level Security (RLS)
+
+## 🏗️ Tech Stack
+
+- **Frontend**: Next.js 15, React 19, TypeScript
+- **Styling**: Tailwind CSS v4
+- **Backend**: Supabase (PostgreSQL + Storage)
+- **Payments**: Stripe Payment Intents + Elements
+- **Deployment**: Vercel
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Node.js 18+ 
+- Supabase account
+- Stripe account
+
+### Installation
 ```bash
+# Clone the repository
+git clone https://github.com/j2j-connection/sdebike-test-ride.git
+cd sdebike-test-ride
+
+# Install dependencies
+npm install
+
+# Set up environment variables
+cp .env.example .env.local
+# Edit .env.local with your Supabase and Stripe keys
+
+# Run the development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to see the application.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🌐 Production
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+**Live Application**: [https://sdebike-test-ride-r6p9s5bdb-j2-j.vercel.app](https://sdebike-test-ride-r6p9s5bdb-j2-j.vercel.app)
 
-## Learn More
+**Status**: ✅ Fully deployed and functional
 
-To learn more about Next.js, take a look at the following resources:
+## 💳 Payment Integration
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+The application uses Stripe for secure payment authorization:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **Amount**: $1 authorization hold (no charges)
+- **Methods**: Credit cards, Apple Pay, Google Pay
+- **Security**: PCI compliant, no card data stored
+- **Flow**: Authorization → Test Ride → Automatic release
 
-## Deploy on Vercel
+## 📱 Customer Flow
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. **Contact Information**: Name, phone, email
+2. **Bike Selection**: Choose model and duration
+3. **ID Verification**: Photo capture of government ID
+4. **Digital Waiver**: Electronic signature
+5. **Payment Authorization**: $1 hold via Stripe
+6. **Confirmation**: Test ride details and instructions
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 👨‍💼 Admin Features
+
+- **Dashboard**: View all test rides and customer data
+- **Search & Filter**: Find specific customers or dates
+- **Document Access**: View ID photos and signed waivers
+- **Payment Status**: Track authorization status
+- **Export**: Download customer data for follow-up
+
+## 🔧 Configuration
+
+### Environment Variables
+```bash
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+
+# Stripe
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
+STRIPE_SECRET_KEY=sk_test_...
+```
+
+### Database Setup
+```bash
+# Run the database schema
+node setup-database.js
+
+# Set up storage buckets
+node setup-storage.js
+```
+
+## 🧪 Testing
+
+```bash
+# Run automated tests
+npm run test:qa
+
+# Test payment flow
+node qa/payment-flow-test.js
+
+# Test Stripe integration
+node qa/stripe-payment-test.js
+```
+
+## 📚 Documentation
+
+- **[AI Context](AI_CONTEXT.md)**: Comprehensive technical documentation
+- **[Stripe Integration Guide](STRIPE_INTEGRATION_GUIDE.md)**: Payment system details
+- **[Development Log](DEVELOPMENT_LOG.md)**: Issue tracking and resolutions
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Run tests
+5. Submit a pull request
+
+## 📄 License
+
+This project is proprietary software for SD Electric Bike.
+
+## 🆘 Support
+
+For technical support or questions about the application, please refer to the documentation or contact the development team.
+
+---
+
+**Built with ❤️ for SD Electric Bike**
