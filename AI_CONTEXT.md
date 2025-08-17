@@ -239,6 +239,69 @@ if (confirmError.type === 'card_error') {
 - **Server-side validation**: All payment intents created server-side
 - **HTTPS required**: For production digital wallet support
 
+## 📱 SMS INTEGRATION
+
+### Provider-Agnostic SMS Service
+The application uses a flexible SMS service that can switch between providers:
+
+#### **TextBelt Provider (Development)**
+- **Purpose**: Development and testing SMS functionality
+- **Configuration**: `TEXTBELT_API_KEY` in environment
+- **Cost**: Free tier available for testing
+- **Features**: Simple REST API, no account setup required
+
+#### **Twilio Provider (Production)**
+- **Purpose**: Production SMS delivery
+- **Configuration**: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_PHONE_NUMBER`
+- **Features**: Professional SMS delivery, delivery receipts, webhooks
+
+### Environment Variables
+```bash
+# SMS Provider Selection
+SMS_PROVIDER=textbelt  # 'textbelt' | 'twilio'
+
+# TextBelt Configuration
+TEXTBELT_API_KEY=your_textbelt_api_key
+
+# Twilio Configuration (when ready)
+TWILIO_ACCOUNT_SID=your_twilio_account_sid
+TWILIO_AUTH_TOKEN=your_twilio_auth_token
+TWILIO_PHONE_NUMBER=your_twilio_phone_number
+```
+
+### SMS Service Usage
+```typescript
+import { smsService } from '@/lib/services/smsService'
+
+// Send test ride confirmation
+const result = await smsService.sendTestRideConfirmation(
+  customer.phone,
+  returnTime
+)
+
+// Check provider status
+const provider = smsService.getCurrentProvider()
+const configured = smsService.isConfigured()
+```
+
+### Switching Providers
+```typescript
+// Switch to Twilio when ready
+smsService.setProvider('twilio')
+
+// Or set environment variable
+process.env.SMS_PROVIDER = 'twilio'
+```
+
+### Testing SMS Integration
+```bash
+# Test TextBelt integration
+node test-textbelt.js
+
+# Test with specific provider
+SMS_PROVIDER=textbelt node test-textbelt.js
+```
+
 ## 🚀 PRODUCTION DEPLOYMENT
 
 ### Requirements

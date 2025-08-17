@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { CheckCircle, Clock, MapPin, MessageSquare, RefreshCw, AlertCircle } from "lucide-react"
 import { motion } from "framer-motion"
+import { smsService } from "@/lib/services/smsService"
 
 interface SuccessScreenProps {
   testDrive: {
@@ -24,6 +25,7 @@ interface SuccessScreenProps {
 
 export default function SuccessScreen({ testDrive, customer, onStartOver }: SuccessScreenProps) {
   const [smsStatus, setSmsStatus] = useState<'sending' | 'sent' | 'failed'>('sending')
+  const [smsProvider, setSmsProvider] = useState<string>('')
 
   // Defensive programming: handle missing data gracefully
   if (!testDrive || !customer) {
@@ -45,21 +47,26 @@ export default function SuccessScreen({ testDrive, customer, onStartOver }: Succ
   useEffect(() => {
     if (testDrive && customer) {
       sendConfirmationSMS()
+      setSmsProvider(smsService.getCurrentProvider())
     }
   }, [testDrive, customer])
 
   const sendConfirmationSMS = async () => {
-    const returnTime = formatTime(testDrive.end_time)
-    const confirmationMessage = `🚴 Your SDEBIKE test ride has started! Please return by ${returnTime}. Location: 1234 Electric Ave, San Diego, CA. Questions? Reply to this message.`
-    
     try {
       setSmsStatus('sending')
       
-      // TODO: Replace with actual SMS service (Twilio)
-      await new Promise(resolve => setTimeout(resolve, 2000)) // Simulate SMS sending
+      const result = await smsService.sendTestRideConfirmation(
+        customer.phone,
+        formatTime(testDrive.end_time)
+      )
       
-      // Mock successful SMS for now
-      setSmsStatus('sent')
+      if (result.success) {
+        setSmsStatus('sent')
+        console.log(`SMS sent successfully via ${result.provider}:`, result.messageId)
+      } else {
+        setSmsStatus('failed')
+        console.error("SMS failed:", result.error)
+      }
     } catch (error) {
       console.error("Failed to send confirmation SMS:", error)
       setSmsStatus('failed')
@@ -131,7 +138,7 @@ export default function SuccessScreen({ testDrive, customer, onStartOver }: Succ
               </strong>
               <br />
               {smsStatus === 'sending' && 'We\'re sending you a text confirmation with details.'}
-              {smsStatus === 'sent' && 'Check your phone for ride details and return instructions.'}
+              {smsStatus === 'sent' && `Check your phone for ride details and return instructions. (Sent via ${smsProvider})`}
               {smsStatus === 'failed' && 'Please take note of your return time above.'}
             </AlertDescription>
           </Alert>
