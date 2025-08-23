@@ -18,7 +18,7 @@ export interface SMSResponse {
 // TextBelt Provider Implementation
 class TextBeltProvider {
   private apiKey: string;
-  private baseUrl = 'https://textbelt.com/text';
+  private baseUrl = '/api/send-sms'; // Use our server-side API instead
 
   constructor() {
     this.apiKey = process.env.NEXT_PUBLIC_TEXTBELT_API_KEY || '';
@@ -34,6 +34,7 @@ class TextBeltProvider {
     }
 
     try {
+      // Use our server-side API to avoid CORS issues
       const response = await fetch(this.baseUrl, {
         method: 'POST',
         headers: {
@@ -42,7 +43,6 @@ class TextBeltProvider {
         body: JSON.stringify({
           phone: message.to,
           message: message.body,
-          key: this.apiKey,
         }),
       });
 
@@ -51,14 +51,14 @@ class TextBeltProvider {
       if (result.success) {
         return {
           success: true,
-          messageId: result.textId || `tb_${Date.now()}`,
+          messageId: result.messageId || `tb_${Date.now()}`,
           status: 'sent',
           provider: 'textbelt'
         };
       } else {
         return {
           success: false,
-          error: result.error || 'TextBelt SMS failed',
+          error: result.error || 'SMS delivery failed',
           status: 'failed',
           provider: 'textbelt'
         };

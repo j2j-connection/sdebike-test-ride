@@ -96,7 +96,7 @@ export default function ContactStep({ data, onUpdate, onNext }: ContactStepProps
                 className={`h-10 ${errors.phone ? 'border-red-500' : 'border-slate-200'}`} 
               />
               {errors.phone && <p className="text-red-500 text-xs">{errors.phone}</p>}
-              <p className="text-xs text-slate-500">We'll send you SMS updates about your test ride</p>
+              <p className="text-xs text-slate-500">We&apos;ll send you SMS updates about your test ride</p>
             </div>
 
             <div className="space-y-2">

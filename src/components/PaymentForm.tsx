@@ -34,32 +34,20 @@ export default function PaymentForm({ clientSecret, onSuccess, onError, userEmai
 
   // Simple check for payment method availability
   useEffect(() => {
-    if (stripe && elements) {
-      console.log('🔍 Stripe Elements loaded successfully')
-      console.log('📱 Apple Pay & Google Pay will work in production with HTTPS')
-    }
+    // Payment methods initialized
   }, [stripe, elements])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    console.log('🔍 Payment Form Debug:', { 
-      stripe: !!stripe, 
-      elements: !!elements, 
-      paymentStatus,
-      isProcessing 
-    })
-
     if (!stripe || !elements) {
       const errorMsg = "Payment system not ready. Please try again."
-      console.error('❌ Payment system not ready:', { stripe: !!stripe, elements: !!elements })
       setError(errorMsg)
       return
     }
 
     // Prevent multiple submissions
     if (isProcessing || paymentStatus === 'completed') {
-      console.log('⚠️ Payment already processing or completed, ignoring submission')
       return
     }
 
@@ -69,8 +57,6 @@ export default function PaymentForm({ clientSecret, onSuccess, onError, userEmai
     setPaymentStatus('processing')
 
     try {
-      console.log('💳 Starting payment confirmation...')
-      
       // Confirm the payment
       const { error: confirmError, paymentIntent } = await stripe.confirmPayment({
         elements,
@@ -80,10 +66,7 @@ export default function PaymentForm({ clientSecret, onSuccess, onError, userEmai
         redirect: 'if_required',
       })
 
-      console.log('🔍 Payment confirmation result:', { confirmError, paymentIntent })
-
       if (confirmError) {
-        console.error('❌ Payment confirmation error:', confirmError)
         
         // Handle specific error types
         if (confirmError.type === 'card_error' || confirmError.type === 'validation_error') {
@@ -97,35 +80,28 @@ export default function PaymentForm({ clientSecret, onSuccess, onError, userEmai
         setPaymentStatus('failed')
         onError(confirmError.message || 'Payment failed')
       } else if (paymentIntent && paymentIntent.status === 'succeeded') {
-        console.log('✅ Payment succeeded:', paymentIntent)
         setPaymentStatus('completed')
         onSuccess(paymentIntent)
       } else if (paymentIntent && paymentIntent.status === 'requires_capture') {
-        console.log('✅ Payment authorized successfully (requires capture):', paymentIntent.status)
         setPaymentStatus('completed')
         onSuccess(paymentIntent)
       } else if (paymentIntent && paymentIntent.status === 'processing') {
-        console.log('⏳ Payment is processing:', paymentIntent.status)
         setPaymentStatus('processing')
         setError('Payment is being processed. Please wait...')
       } else if (paymentIntent && paymentIntent.status === 'canceled') {
-        console.log('❌ Payment was canceled:', paymentIntent.status)
         setPaymentStatus('failed')
         setError('Payment was canceled. Please try again.')
         onError('Payment canceled')
       } else if (paymentIntent && paymentIntent.status === 'requires_action') {
-        console.log('⏳ Payment requires additional action:', paymentIntent.status)
         setPaymentStatus('processing')
         // Handle 3D Secure or other authentication
         setError('Payment requires additional verification. Please complete the authentication.')
       } else {
-        console.log('❓ Unexpected payment status:', paymentIntent?.status)
         setPaymentStatus('failed')
         setError(`Unexpected payment status: ${paymentIntent?.status}. Please check with support.`)
         onError(`Unexpected payment status: ${paymentIntent?.status}`)
       }
     } catch (error) {
-      console.error('💥 Payment processing exception:', error)
       setPaymentStatus('failed')
       setError('Payment processing failed. Please try again.')
       onError('Payment processing failed')

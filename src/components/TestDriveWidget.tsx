@@ -47,27 +47,20 @@ export default function TestDriveWidget() {
   }
 
   const handleNext = () => {
-    console.log(`Moving from step ${currentStep} to step ${currentStep + 1}`)
     setCurrentStep(prev => Math.min(prev + 1, STEPS.length))
   }
 
   const handleBack = () => {
-    console.log(`Moving from step ${currentStep} to step ${currentStep - 1}`)
     setCurrentStep(prev => Math.max(prev - 1, 1))
   }
 
   const handleComplete = async (driveData: any) => {
     try {
-      console.log("Current formData:", formData)
-      console.log("Drive data passed:", driveData)
-      
       // Use the driveData passed from ConfirmationStep if available
       const finalData = {
         ...formData,
         ...driveData
       }
-      
-      console.log("Final combined data:", finalData)
       
       const { testDriveService } = await import("@/lib/services/testDriveService")
       
@@ -89,8 +82,6 @@ export default function TestDriveWidget() {
           end_time: finalData.end_time || new Date(finalData.start_time!.getTime() + (finalData.duration_hours! * 60 * 60 * 1000))
         }
       }
-      
-      console.log("About to create with data:", createData)
 
       const result = await testDriveService.createTestDrive(createData)
       
@@ -100,7 +91,6 @@ export default function TestDriveWidget() {
       })
       setCurrentStep(5) // Success screen
     } catch (error) {
-      console.error("Failed to complete test drive:", error)
       alert("There was an error creating your test ride. Please try again.")
     }
   }
@@ -141,7 +131,6 @@ export default function TestDriveWidget() {
 
   // Render success screen only after completion
   if (completedData) {
-    console.log("Rendering SuccessScreen with completedData:", completedData)
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-yellow-50 p-2">
         <div className="max-w-md mx-auto">
