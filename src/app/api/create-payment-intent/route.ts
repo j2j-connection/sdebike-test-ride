@@ -1,9 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import Stripe from 'stripe';
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-06-20',
-});
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,23 +9,31 @@ export async function POST(request: NextRequest) {
     
     const { amount, customerEmail, testRideId } = await request.json();
 
-    // Create a PaymentIntent with the order amount and currency
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: amount, // Amount in cents
-      currency: 'usd',
-      automatic_payment_methods: {
-        enabled: true,
+    // Create PaymentIntent using direct fetch instead of Stripe SDK
+    const response = await fetch('https://api.stripe.com/v1/payment_intents', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.STRIPE_SECRET_KEY}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
       },
-      metadata: {
-        testRideId,
-        customerEmail,
-        type: 'test_ride_hold',
-      },
-      // For test rides, we'll capture the payment later if needed
-      capture_method: 'manual',
-      // Set a description
-      description: `Test Ride Hold - ${customerEmail}`,
+      body: new URLSearchParams({
+        amount: amount.toString(),
+        currency: 'usd',
+        'automatic_payment_methods[enabled]': 'true',
+        'metadata[testRideId]': testRideId,
+        'metadata[customerEmail]': customerEmail,
+        'metadata[type]': 'test_ride_hold',
+        capture_method: 'manual',
+        description: `Test Ride Hold - ${customerEmail}`,
+      }),
     });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Stripe API error: ${response.status} - ${errorText}`);
+    }
+
+    const paymentIntent = await response.json();
 
     return NextResponse.json({
       clientSecret: paymentIntent.client_secret,
