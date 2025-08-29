@@ -12,38 +12,46 @@ export async function GET() {
     }
 
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-      apiVersion: '2023-10-16',
+      apiVersion: '2024-06-20', // Match the payment intent endpoint
       timeout: 20000, // 20 second timeout
-      maxNetworkRetries: 0, // No retries for debugging
+      maxNetworkRetries: 2, // Enable retries like payment endpoint
     });
 
-    // First test: Just retrieve account info (simpler API call)
-    console.log('Attempting to retrieve Stripe account...');
+    // First test: Try creating a payment intent (same as main endpoint)
+    console.log('Testing payment intent creation...');
     
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: 100, // $1.00 in cents
+      currency: 'usd',
+      automatic_payment_methods: {
+        enabled: true,
+      },
+      metadata: {
+        testRideId: 'stripe-test-endpoint',
+        customerEmail: 'test@stripe-endpoint.com',
+        type: 'test_ride_hold',
+      },
+      capture_method: 'manual',
+      description: 'Stripe Test Endpoint - Payment Intent Creation Test',
+    });
+    
+    console.log('Payment intent created successfully:', paymentIntent.id);
+
+    // Also test account retrieval
     const account = await stripe.accounts.retrieve();
-    
-    console.log('Account retrieved successfully:', {
-      id: account.id,
-      country: account.country,
-      business_type: account.business_type,
-      charges_enabled: account.charges_enabled,
-      payouts_enabled: account.payouts_enabled,
-      capabilities: account.capabilities
-    });
-
-    // Check if account is fully verified
-    const isFullyVerified = account.charges_enabled && account.payouts_enabled;
     
     return NextResponse.json({
       success: true,
-      accountId: account.id,
-      country: account.country,
-      business_type: account.business_type,
-      charges_enabled: account.charges_enabled,
-      payouts_enabled: account.payouts_enabled,
-      fully_verified: isFullyVerified,
-      capabilities: account.capabilities,
-      requirements: account.requirements
+      payment_intent_test: {
+        id: paymentIntent.id,
+        status: paymentIntent.status,
+        client_secret: paymentIntent.client_secret ? 'present' : 'missing'
+      },
+      account_test: {
+        id: account.id,
+        charges_enabled: account.charges_enabled,
+        payouts_enabled: account.payouts_enabled
+      }
     });
   } catch (error) {
     console.error('Stripe test error:', error);
