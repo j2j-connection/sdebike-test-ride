@@ -7,6 +7,11 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 export async function POST(request: NextRequest) {
   try {
+    // First check if Stripe key is properly loaded
+    if (!process.env.STRIPE_SECRET_KEY) {
+      throw new Error('STRIPE_SECRET_KEY environment variable is not set');
+    }
+    
     const { amount, customerEmail, testRideId } = await request.json();
 
     // Create a PaymentIntent with the order amount and currency

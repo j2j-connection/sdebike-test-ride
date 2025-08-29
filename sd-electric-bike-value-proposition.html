@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SD Electric Bike - Digital Test Ride System Value Proposition</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+            box-shadow: 0 0 30px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 40px 60px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header .subtitle {
+            font-size: 1.3rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+        
+        .hero-message {
+            background: #f8f9fa;
+            padding: 50px 60px;
+            text-align: center;
+            border-bottom: 3px solid #e74c3c;
+        }
+        
+        .hero-message h2 {
+            font-size: 2.5rem;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        
+        .hero-message p {
+            font-size: 1.2rem;
+            color: #555;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .main-content {
+            padding: 60px;
+        }
+        
+        .value-pillars {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 40px;
+            margin-bottom: 60px;
+        }
+        
+        .pillar {
+            background: white;
+            border-radius: 15px;
+            padding: 40px 30px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border-left: 5px solid #3498db;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .pillar:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+        }
+        
+        .pillar.staff-time {
+            border-left-color: #2ecc71;
+        }
+        
+        .pillar.risk-elimination {
+            border-left-color: #e74c3c;
+        }
+        
+        .pillar.lead-generation {
+            border-left-color: #f39c12;
+        }
+        
+        .pillar-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 24px;
+            color: white;
+        }
+        
+        .staff-time .pillar-icon {
+            background: #2ecc71;
+        }
+        
+        .risk-elimination .pillar-icon {
+            background: #e74c3c;
+        }
+        
+        .lead-generation .pillar-icon {
+            background: #f39c12;
+        }
+        
+        .pillar h3 {
+            font-size: 1.5rem;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        .pillar ul {
+            list-style: none;
+        }
+        
+        .pillar li {
+            margin-bottom: 12px;
+            padding-left: 25px;
+            position: relative;
+            color: #555;
+            font-size: 1rem;
+        }
+        
+        .pillar li::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #2ecc71;
+            font-weight: bold;
+        }
+        
+        .before-after {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 40px;
+            margin-bottom: 40px;
+        }
+        
+        .before-after h3 {
+            text-align: center;
+            font-size: 1.8rem;
+            color: #2c3e50;
+            margin-bottom: 30px;
+        }
+        
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        
+        .before, .after {
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .before {
+            background: #ffe6e6;
+            border: 2px solid #e74c3c;
+        }
+        
+        .after {
+            background: #e6f7e6;
+            border: 2px solid #2ecc71;
+        }
+        
+        .before h4, .after h4 {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+        }
+        
+        .before h4 {
+            color: #e74c3c;
+        }
+        
+        .after h4 {
+            color: #2ecc71;
+        }
+        
+        .roi-section {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            padding: 50px 40px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .roi-section h3 {
+            font-size: 2rem;
+            margin-bottom: 30px;
+        }
+        
+        .roi-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+        
+        .roi-stat {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+        }
+        
+        .roi-stat h4 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: #ecf0f1;
+        }
+        
+        .roi-stat p {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        
+        .lightspeed-integration {
+            background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 15px;
+            margin-bottom: 40px;
+        }
+        
+        .lightspeed-integration h3 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .integration-features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .integration-feature {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+        }
+        
+        .integration-feature h4 {
+            margin-bottom: 10px;
+            color: #ecf0f1;
+        }
+        
+        .cta-section {
+            background: #2c3e50;
+            color: white;
+            padding: 50px 40px;
+            text-align: center;
+            margin-top: 40px;
+        }
+        
+        .cta-section h3 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+        
+        .cta-section p {
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            background: #e74c3c;
+            color: white;
+            padding: 15px 40px;
+            text-decoration: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: background 0.3s ease;
+        }
+        
+        .cta-button:hover {
+            background: #c0392b;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                margin: 0;
+            }
+            
+            .header, .main-content, .hero-message {
+                padding: 30px 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .hero-message h2 {
+                font-size: 1.8rem;
+            }
+            
+            .value-pillars {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .comparison {
+                grid-template-columns: 1fr;
+            }
+            
+            .roi-stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .integration-features {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>SD Electric Bike</h1>
+            <p class="subtitle">Digital Test Ride System</p>
+        </div>
+        
+        <div class="hero-message">
+            <h2>Free Your Staff. Eliminate Risk. Grow Your Database.</h2>
+            <p>Transform your test ride process from paper-based chaos to streamlined digital efficiency that saves time, reduces liability, and captures every lead.</p>
+        </div>
+        
+        <div class="main-content">
+            <div class="value-pillars">
+                <div class="pillar staff-time">
+                    <div class="pillar-icon">⏱️</div>
+                    <h3>Staff Time Liberation</h3>
+                    <ul>
+                        <li>Customers complete entire signup independently on tablet/phone</li>
+                        <li>No staff hand-holding through forms or signatures</li>
+                        <li>Staff focus on sales while customers self-onboard</li>
+                        <li>Instant digital results in admin dashboard</li>
+                        <li>Parallel operations: help multiple customers simultaneously</li>
+                    </ul>
+                </div>
+                
+                <div class="pillar risk-elimination">
+                    <div class="pillar-icon">🛡️</div>
+                    <h3>Eliminate Liability & Risk</h3>
+                    <ul>
+                        <li>No physical ID handling - digital photo capture only</li>
+                        <li>Zero credit card liability - Stripe handles all payment data</li>
+                        <li>Secure digital storage meets 2-year retention requirements</li>
+                        <li>Automated compliance with timestamps and IP tracking</li>
+                        <li>No filing cabinets or paper document risks</li>
+                    </ul>
+                </div>
+                
+                <div class="pillar lead-generation">
+                    <div class="pillar-icon">🎯</div>
+                    <h3>Lightspeed Integration & Lead Gen</h3>
+                    <ul>
+                        <li>Test ride data flows directly into Lightspeed database</li>
+                        <li>Track exactly which bikes each customer tested</li>
+                        <li>Automated SMS follow-up system for post-ride engagement</li>
+                        <li>Service history foundation for future appointments</li>
+                        <li>Targeted marketing based on bike preferences</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="before-after">
+                <h3>The Transformation</h3>
+                <div class="comparison">
+                    <div class="before">
+                        <h4>❌ Before: Paper Chaos</h4>
+                        <p>Staff explaining forms, handling IDs, witnessing signatures, filing paperwork, managing credit card liability, losing potential leads in paper stacks</p>
+                    </div>
+                    <div class="after">
+                        <h4>✅ After: Digital Efficiency</h4>
+                        <p>Staff selling bikes while customers self-serve, zero liability exposure, automated lead capture, instant Lightspeed integration, SMS follow-up system</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="roi-section">
+                <h3>Return on Investment</h3>
+                <p>Based on typical bike shop volume of 50 test rides per month:</p>
+                <div class="roi-stats">
+                    <div class="roi-stat">
+                        <h4>15hrs</h4>
+                        <p>Staff time saved monthly</p>
+                    </div>
+                    <div class="roi-stat">
+                        <h4>100%</h4>
+                        <p>Lead capture rate</p>
+                    </div>
+                    <div class="roi-stat">
+                        <h4>0%</h4>
+                        <p>Payment liability risk</p>
+                    </div>
+                    <div class="roi-stat">
+                        <h4>600+</h4>
+                        <p>Customer records yearly</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="lightspeed-integration">
+                <h3>🔗 Seamless Lightspeed Integration</h3>
+                <div class="integration-features">
+                    <div class="integration-feature">
+                        <h4>Automatic Customer Import</h4>
+                        <p>Test ride customers appear instantly in your Lightspeed database</p>
+                    </div>
+                    <div class="integration-feature">
+                        <h4>Bike Preference Tracking</h4>
+                        <p>Know which models customers tested for targeted sales follow-up</p>
+                    </div>
+                    <div class="integration-feature">
+                        <h4>Service History Foundation</h4>
+                        <p>Link test rides to future maintenance and service appointments</p>
+                    </div>
+                    <div class="integration-feature">
+                        <h4>SMS Marketing Integration</h4>
+                        <p>Automated follow-up campaigns based on bike preferences</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="cta-section">
+            <h3>Ready to Transform Your Test Ride Process?</h3>
+            <p>Stop losing time, reduce liability, and start capturing every lead with our proven digital system.</p>
+            <a href="#contact" class="cta-button">Schedule Your Demo</a>
+        </div>
+    </div>
+</body>
+</html>

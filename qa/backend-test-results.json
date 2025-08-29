@@ -1,0 +1,92 @@
+{
+  "summary": {
+    "total": 6,
+    "passed": 5,
+    "failed": 1,
+    "successRate": 83,
+    "timestamp": "2025-08-23T16:12:20.713Z",
+    "testPhone": "+19142168070"
+  },
+  "tests": [
+    {
+      "name": "Health Check - Root Endpoint",
+      "status": "PASSED",
+      "duration": 116,
+      "result": {
+        "status": 200,
+        "contentType": "text/html; charset=utf-8"
+      }
+    },
+    {
+      "name": "Admin Dashboard Endpoint",
+      "status": "PASSED",
+      "duration": 24,
+      "result": {
+        "status": 200,
+        "hasContent": true,
+        "contentLength": 16063
+      }
+    },
+    {
+      "name": "SMS API Endpoint",
+      "status": "PASSED",
+      "duration": 1439,
+      "result": {
+        "status": 200,
+        "smsResult": {
+          "success": true,
+          "messageId": "1583131755965533195",
+          "quotaRemaining": 41
+        },
+        "phoneFormatted": true
+      }
+    },
+    {
+      "name": "Phone Number Formatting",
+      "status": "PASSED",
+      "duration": 5810,
+      "result": [
+        {
+          "input": "9142168070",
+          "expected": "+19142168070",
+          "success": true,
+          "formatted": "properly formatted"
+        },
+        {
+          "input": "+19142168070",
+          "expected": "+19142168070",
+          "success": true,
+          "formatted": "properly formatted"
+        },
+        {
+          "input": "19142168070",
+          "expected": "+19142168070",
+          "success": true,
+          "formatted": "properly formatted"
+        },
+        {
+          "input": "(914) 216-8070",
+          "expected": "+19142168070",
+          "success": true,
+          "formatted": "properly formatted"
+        }
+      ]
+    },
+    {
+      "name": "Stripe Payment Intent Creation",
+      "status": "PASSED",
+      "duration": 793,
+      "result": {
+        "status": 200,
+        "hasClientSecret": false,
+        "paymentIntentId": null
+      }
+    },
+    {
+      "name": "Database Connection via Admin",
+      "status": "FAILED",
+      "duration": 198,
+      "error": "Database connection error detected in admin page"
+    }
+  ]
+}
