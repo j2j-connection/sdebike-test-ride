@@ -160,27 +160,6 @@ export default function PaymentForm({ clientSecret, onSuccess, onError, userEmai
             />
           </div>
 
-          {/* Digital Wallet Support Indicators */}
-          <div className="flex items-center justify-center space-x-4 p-3 bg-gray-50 rounded-lg border">
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <div className="w-6 h-6 bg-black rounded-lg flex items-center justify-center">
-                <span className="text-white text-xs font-bold">🍎</span>
-              </div>
-              <span>Apple Pay</span>
-            </div>
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <div className="w-6 h-6 bg-blue-600 rounded-lg flex items-center justify-center">
-                <span className="text-white text-xs font-bold">G</span>
-              </div>
-              <span>Google Pay</span>
-            </div>
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <div className="w-6 h-6 bg-gray-700 rounded-lg flex items-center justify-center">
-                <span className="text-white text-xs font-bold">💳</span>
-              </div>
-              <span>Credit Card</span>
-            </div>
-          </div>
 
           {error && (
             <Alert variant="destructive">
