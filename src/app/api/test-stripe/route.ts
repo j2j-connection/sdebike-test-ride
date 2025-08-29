@@ -18,13 +18,32 @@ export async function GET() {
     });
 
     // First test: Just retrieve account info (simpler API call)
+    console.log('Attempting to retrieve Stripe account...');
+    
     const account = await stripe.accounts.retrieve();
+    
+    console.log('Account retrieved successfully:', {
+      id: account.id,
+      country: account.country,
+      business_type: account.business_type,
+      charges_enabled: account.charges_enabled,
+      payouts_enabled: account.payouts_enabled,
+      capabilities: account.capabilities
+    });
 
+    // Check if account is fully verified
+    const isFullyVerified = account.charges_enabled && account.payouts_enabled;
+    
     return NextResponse.json({
       success: true,
       accountId: account.id,
       country: account.country,
-      capabilities: account.capabilities
+      business_type: account.business_type,
+      charges_enabled: account.charges_enabled,
+      payouts_enabled: account.payouts_enabled,
+      fully_verified: isFullyVerified,
+      capabilities: account.capabilities,
+      requirements: account.requirements
     });
   } catch (error) {
     console.error('Stripe test error:', error);
