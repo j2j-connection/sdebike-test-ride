@@ -10,7 +10,7 @@ import { PaymentIntent } from "@stripe/stripe-js"
 import { Loader2, CreditCard, AlertCircle } from "lucide-react"
 
 // Load Stripe outside of component to avoid recreating on every render
-const stripePromise = loadStripe('pk_test_51Rvs8dA3dzhvH5fqqf7IbHqXBU0OOfQcN7ozQ7GQtHrxF2tV0oXTHUqicBvGN6PDmI2ovkzw5nxAHXPX38fn6q7q00qR3C1dLh')
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
 
 interface PaymentStepProps {
   data: {
