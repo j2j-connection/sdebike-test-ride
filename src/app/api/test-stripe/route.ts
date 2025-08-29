@@ -13,6 +13,8 @@ export async function GET() {
 
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
       apiVersion: '2024-06-20',
+      timeout: 10000, // 10 second timeout
+      maxNetworkRetries: 1, // Reduce retries for faster debugging
     });
 
     // Test creating a simple payment intent
