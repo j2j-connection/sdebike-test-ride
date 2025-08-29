@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
       body: new URLSearchParams({
         amount: amount.toString(),
         currency: 'usd',
-        'payment_method_types[]': 'card',
+        'automatic_payment_methods[enabled]': 'true',
         'metadata[testRideId]': testRideId,
         'metadata[customerEmail]': customerEmail,
         'metadata[type]': 'test_ride_hold',
