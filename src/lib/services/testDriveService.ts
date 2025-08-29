@@ -31,7 +31,7 @@ export interface TestDriveResult {
 }
 
 export const testDriveService = {
-  async createTestDrive(data: CreateTestDriveData): Promise<TestDriveResult> {
+  async createTestDrive(data: CreateTestDriveData, shopId?: string): Promise<TestDriveResult> {
     try {
       // First create the customer
       const customerData: CustomerInsert = {
@@ -104,7 +104,7 @@ export const testDriveService = {
     }
   },
 
-  async getActiveTestDrives(): Promise<(TestDrive & { customer: Customer })[]> {
+  async getActiveTestDrives(shopId?: string): Promise<(TestDrive & { customer: Customer })[]> {
     const { data, error } = await supabase
       .from('test_drives')
       .select(`
@@ -137,7 +137,7 @@ export const testDriveService = {
     }
   },
 
-  async sendNotification(customerId: string, phone: string, message: string, messageType: string): Promise<void> {
+  async sendNotification(customerId: string, phone: string, message: string, messageType: string, shopId?: string): Promise<void> {
     try {
       // First, try to send the SMS via Twilio
       const response = await fetch('/api/test-twilio', {
@@ -158,6 +158,7 @@ export const testDriveService = {
       const { error } = await supabase
         .from('notifications')
         .insert({
+          shop_id: shopId,
           customer_id: customerId,
           customer_phone: phone,
           message_content: message,

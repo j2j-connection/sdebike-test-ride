@@ -1,11 +1,12 @@
-"use client"
+'use client'
 
-import React, { useEffect, useMemo, useState } from "react"
-import { testDriveService } from "@/lib/services/testDriveService"
+import React, { useEffect, useState, useMemo } from "react"
+import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
+import { testDriveService } from "@/lib/services/testDriveService"
+import { Shop } from "@/lib/services/shopService"
 
 interface ActiveDriveItem {
   id: string
@@ -27,7 +28,11 @@ interface ActiveDriveItem {
   status: string
 }
 
-export default function AdminDashboardPage() {
+interface ShopAdminDashboardProps {
+  shop: Shop
+}
+
+export default function ShopAdminDashboard({ shop }: ShopAdminDashboardProps) {
   const [drives, setDrives] = useState<ActiveDriveItem[]>([])
   const [query, setQuery] = useState("")
   const [isLoading, setIsLoading] = useState(true)
@@ -35,7 +40,7 @@ export default function AdminDashboardPage() {
   const load = async () => {
     setIsLoading(true)
     try {
-      const data = await testDriveService.getActiveTestDrives()
+      const data = await testDriveService.getActiveTestDrives(shop.id)
       setDrives(data as unknown as ActiveDriveItem[])
     } finally {
       setIsLoading(false)
@@ -44,7 +49,7 @@ export default function AdminDashboardPage() {
 
   useEffect(() => {
     load() // fetch once; avoid polling that causes the UI to reset
-  }, [])
+  }, [shop.id])
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -71,7 +76,7 @@ export default function AdminDashboardPage() {
     <main className="min-h-screen bg-slate-50 p-4">
       <div className="max-w-6xl mx-auto space-y-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-slate-800">SDEBIKE Admin</h1>
+          <h1 className="text-2xl font-bold text-slate-800">{shop.name} Admin</h1>
           <div className="flex gap-2">
             <Input
               value={query}
@@ -130,6 +135,7 @@ export default function AdminDashboardPage() {
                       <Button 
                         onClick={() => handleComplete(drive.id)}
                         className="ml-auto"
+                        style={{ backgroundColor: shop.primary_color }}
                       >
                         Complete
                       </Button>
@@ -144,5 +150,3 @@ export default function AdminDashboardPage() {
     </main>
   )
 }
-
-
