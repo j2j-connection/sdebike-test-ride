@@ -31,6 +31,17 @@ export async function POST(request: NextRequest) {
       case 'payment_intent.succeeded':
         const paymentIntent = event.data.object as Stripe.PaymentIntent;
         console.log('Payment succeeded:', paymentIntent.id);
+        
+        // Auto-capture for test ride holds
+        if (paymentIntent.metadata?.type === 'test_ride_hold' && 
+            paymentIntent.status === 'requires_capture') {
+          try {
+            await stripe.paymentIntents.capture(paymentIntent.id);
+            console.log('Auto-captured payment:', paymentIntent.id);
+          } catch (error) {
+            console.error('Failed to auto-capture:', error);
+          }
+        }
         break;
       case 'payment_intent.payment_failed':
         const failedPayment = event.data.object as Stripe.PaymentIntent;
