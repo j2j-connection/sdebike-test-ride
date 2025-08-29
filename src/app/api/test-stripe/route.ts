@@ -5,7 +5,6 @@ export async function GET() {
   try {
     console.log('Testing Stripe integration...');
     console.log('STRIPE_SECRET_KEY exists:', !!process.env.STRIPE_SECRET_KEY);
-    console.log('Key starts with:', process.env.STRIPE_SECRET_KEY?.substring(0, 10));
     
     if (!process.env.STRIPE_SECRET_KEY) {
       return NextResponse.json({ error: 'No Stripe secret key found' }, { status: 500 });
