@@ -12,24 +12,19 @@ export async function GET() {
     }
 
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-      apiVersion: '2024-06-20',
-      timeout: 10000, // 10 second timeout
-      maxNetworkRetries: 1, // Reduce retries for faster debugging
+      apiVersion: '2023-10-16',
+      timeout: 20000, // 20 second timeout
+      maxNetworkRetries: 0, // No retries for debugging
     });
 
-    // Test creating a simple payment intent
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: 100,
-      currency: 'usd',
-      automatic_payment_methods: {
-        enabled: true,
-      },
-    });
+    // First test: Just retrieve account info (simpler API call)
+    const account = await stripe.accounts.retrieve();
 
     return NextResponse.json({
       success: true,
-      paymentIntentId: paymentIntent.id,
-      status: paymentIntent.status
+      accountId: account.id,
+      country: account.country,
+      capabilities: account.capabilities
     });
   } catch (error) {
     console.error('Stripe test error:', error);
