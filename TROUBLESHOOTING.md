@@ -1,142 +1,60 @@
 # TESTR - Troubleshooting Guide
 
-## Stripe Integration Issues
+## Critical Stripe Integration Issues
 
-### Problem: "Failed to create payment intent" in Production
+### Problem: "client_secret provided does not match" Error
 
 **Symptoms:**
-- Local development works fine with live Stripe keys
-- Production deployment returns 500 error: "An error occurred with our connection to Stripe. Request was retried X times"
-- Stripe account shows successful API requests locally but fails in Vercel
+- Browser console shows: `error: {type: "invalid_request_error", message: "The client_secret provided does not match any associated PaymentIntent"}`
+- Payment form fails to load properly
+- Stripe Elements show connection errors
+- Secret keys appearing in browser console (SECURITY ISSUE)
 
-**Root Cause Analysis:**
-1. **Environment Variables**: Production environment variables may not be properly loaded
-2. **API Version**: Different Stripe API versions have different compatibility 
-3. **Network Issues**: Vercel servers may have connectivity issues to Stripe API
-4. **Account Restrictions**: Live Stripe account may have API restrictions
+**Root Cause:**
+**Mismatched Stripe API keys** - The publishable key (frontend) and secret key (backend) are from different Stripe accounts or are outdated.
 
-**Debugging Steps Taken:**
+**CRITICAL SECURITY ISSUE:**
+- Server-side logs containing secret keys were being exposed to browser console
+- Test endpoints were logging sensitive key information
 
-1. **Verified Stripe Account Status:**
-   - Stripe Shell command: `stripe payment_intents create --amount=100 --currency=usd`
-   - Result: "Read-only access in live mode" (normal - confirms account is active)
-   - Stripe dashboard shows 17 successful API requests, 0 failed
+**Resolution Steps:**
 
-2. **Environment Variable Management:**
+1. **IMMEDIATE SECURITY FIX:**
+   - Deleted `/api/test-stripe` and `/api/test-network` endpoints that were leaking secrets
+   - Removed all console.log statements containing key information
+   - **ACTION REQUIRED:** Rotate Stripe secret keys in dashboard immediately
+
+2. **Fix Key Mismatch:**
    ```bash
-   # Remove and re-add clean environment variables
+   # Go to Stripe Dashboard > Developers > API Keys
+   # Copy BOTH keys from the SAME account:
+   # - Publishable key (pk_live_...)  
+   # - Secret key (sk_live_...)
+   
+   # Update Vercel environment variables:
    vercel env rm STRIPE_SECRET_KEY production
    vercel env rm NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY production
    
-   # Re-add with clean values
-   echo "sk_live_..." | vercel env add STRIPE_SECRET_KEY production
-   echo "pk_live_..." | vercel env add NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY production
+   echo "sk_live_YOUR_NEW_SECRET_KEY" | vercel env add STRIPE_SECRET_KEY production
+   echo "pk_live_YOUR_MATCHING_PUBLISHABLE_KEY" | vercel env add NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY production
    ```
 
-3. **API Version Testing:**
-   - Tried: `2024-12-18.acacia` (latest) - Failed
-   - Tried: `2024-06-20` (stable) - Failed  
-   - Tried: `2023-10-16` (older stable) - Testing
+3. **Verify Key Matching:**
+   - Both keys must have the same account ID (the part after `pk_live_51` or `sk_live_51`)
+   - Example: `pk_live_51Rvs8W...` and `sk_live_51Rvs8W...` (same `51Rvs8W` part)
 
-4. **Stripe Configuration Testing:**
-   ```javascript
-   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-     apiVersion: '2023-10-16',
-     timeout: 20000,
-     maxNetworkRetries: 0, // Disable retries for debugging
-   });
-   ```
+4. **Clear Browser Cache:**
+   - Hard refresh (Cmd+Shift+R / Ctrl+Shift+R)
+   - Try incognito/private browsing mode
+   - Clear site data for testr.j2j.info
 
-5. **Test Endpoint Created:**
-   - `/api/test-stripe` - Isolates Stripe connectivity from payment logic
-   - First test: Simple account retrieval instead of payment creation
-   - Includes detailed error logging and environment variable validation
-
-**Current Status:**
-- Issue persists with Stripe connectivity from Vercel to Stripe API
-- Local environment works perfectly with same keys
-- Account verified as active and capable
-
-**Latest Investigation (Aug 29, 2025):**
-- **Key Finding**: Stripe dashboard shows successful payment intent creation with 200 status
-- **Request Details**: POST /v1/payment_intents from IP 172.116.48.86 (Vercel) using API version 2024-06-20
-- **Discrepancy**: Dashboard shows success but API endpoints return connection errors
-- **Configuration Issue**: Test endpoint was using API version 2023-10-16, updated to match working version 2024-06-20
-- **Status**: Still investigating intermittent connectivity vs successful dashboard logs
-
-**Next Steps to Try:**
-1. **Timing Issue**: The successful dashboard entries may be from earlier tests - monitor real-time
-2. **Webhook Requirements**: Check if Stripe account requires webhook endpoints for live API usage  
-3. **Account Verification**: Verify all business verification steps completed in Stripe dashboard
-4. **IP Restrictions**: Check if Stripe account has IP restrictions blocking Vercel servers
-5. **Alternative Test**: Try creating customers or other Stripe resources instead of payment intents
-6. **Contact Stripe Support**: May be account-specific restriction
-
-**Files Modified:**
-- `src/app/api/create-payment-intent/route.ts` - Added error logging
-- `src/app/api/test-stripe/route.ts` - Created comprehensive test endpoint, updated API version
-- Environment variables updated in Vercel (Aug 29: re-verified and cleaned)
-
-**Key Learnings:**
-- Always test Stripe integration with isolated test endpoints
-- Environment variable issues are common in production deployments
-- Stripe API versions can cause compatibility issues
-- Network connectivity can differ between local and cloud environments
-
-## SMS Integration
-
-**Status:** ✅ Working  
-- TextBelt integration functional
-- SMS notifications sending successfully
-- Occasional delivery delays (hours) due to carrier routing - normal for TextBelt
-
-## Domain Configuration
-
-**Status:** ✅ Complete
-- Primary: `testr.j2j.info`
-- Aliases: `testride.j2j.info`, `tester.j2j.info` 
-- DNS configured in Squarespace (Google Domains migrated)
-- SSL certificates auto-generated by Vercel
-
-## Multi-tenant Architecture
-
-**Status:** ✅ Complete
-- Middleware handles `/shop/{slug}` and `/admin/{slug}` routing
-- Original functionality preserved at root paths
-- Ready for scaling to multiple bike shops
-- Database schema prepared for multi-tenant support
-
-## Production Deployment
-
-**Live URL:** https://testr.j2j.info  
-**Status:** Functional except Stripe payments
-
-**Working Features:**
-- Customer onboarding flow
-- ID photo capture  
-- Digital waiver signing
-- SMS notifications
-- Admin dashboard
-- Multi-tenant routing
-
-**Blocked Feature:**
-- Stripe payment authorization (production environment issue)
+**Prevention:**
+- Never log secret keys or parts of secret keys in any environment
+- Always verify key pairs are from the same Stripe account
+- Use webhook secrets for secure event handling
+- Regular key rotation for security
 
 ---
 
-**RESOLVED - ROOT CAUSE IDENTIFIED (Aug 29, 2025):**
-- **Issue**: Vercel serverless functions cannot connect to Stripe API servers
-- **Evidence**: 
-  - Local development works perfectly with same keys
-  - Updated Stripe keys work locally (payment intents + account retrieval successful)
-  - Real-time dashboard monitoring shows zero requests from Vercel
-  - Stripe account fully verified (charges_enabled: true, payouts_enabled: true)
-- **Root Cause**: Network connectivity issue between Vercel infrastructure and api.stripe.com
-
-**NEXT ACTIONS:**
-1. **Contact Vercel Support** - Report serverless functions cannot reach api.stripe.com
-2. **Contact Stripe Support** - Check for IP restrictions affecting Vercel's IP ranges
-3. **Consider alternative deployment platforms** for temporary resolution
-
 *Last Updated: August 29, 2025*
-*Status: Infrastructure connectivity issue identified - requires support intervention*
+*Status: CRITICAL - Requires immediate key rotation and verification*
