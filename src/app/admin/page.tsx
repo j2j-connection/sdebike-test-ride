@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from "react"
 import { testDriveService } from "@/lib/services/testDriveService"
+import { analytics } from "@/lib/analytics"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -37,6 +38,7 @@ export default function AdminDashboardPage() {
     try {
       const data = await testDriveService.getActiveTestDrives()
       setDrives(data as unknown as ActiveDriveItem[])
+      analytics.trackAdminLogin()
     } finally {
       setIsLoading(false)
     }
@@ -62,10 +64,6 @@ export default function AdminDashboardPage() {
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
   }
 
-  const handleComplete = async (id: string) => {
-    await testDriveService.completeTestDrive(id)
-    await load()
-  }
 
   return (
     <main className="min-h-screen bg-slate-50 p-4">
@@ -122,17 +120,12 @@ export default function AdminDashboardPage() {
                   </div>
                   <div className="flex gap-2">
                     {(drive as any).customer.waiver_url ? (
-                      <Button onClick={() => window.open((drive as any).customer.waiver_url, '_blank')}>Open Waiver</Button>
+                      <Button onClick={() => {
+                        analytics.trackCustomerDataViewed()
+                        window.open((drive as any).customer.waiver_url, '_blank')
+                      }}>Open Waiver</Button>
                     ) : (
                       <span className="text-xs text-slate-500">No waiver on file</span>
-                    )}
-                    {drive.status === 'active' && (
-                      <Button 
-                        onClick={() => handleComplete(drive.id)}
-                        className="ml-auto"
-                      >
-                        Complete
-                      </Button>
                     )}
                   </div>
                 </div>

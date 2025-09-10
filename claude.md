@@ -22,11 +22,13 @@ Next.js 15 application for managing electric bike test rides, replacing paper-ba
 - **Stripe**: $1 authorization holds, Apple Pay, Google Pay support
 - **Supabase**: Customer data, ID photos, signed waivers with RLS
 - **SMS Service**: Flexible provider system (TextBelt primary, Twilio fallback)
+- **Google Analytics**: GA4 tracking with custom events for test drive funnel
 
 ## Important Files
 - `src/components/TestDriveWidget.tsx` - Main customer flow
 - `src/components/PaymentForm.tsx` - Stripe integration
 - `src/lib/services/smsService.ts` - SMS provider management
+- `src/lib/analytics.ts` - Google Analytics tracking utilities
 - `src/app/api/create-payment-intent/route.ts` - Stripe API
 - `supabase-schema.sql` - Database structure
 
@@ -41,6 +43,7 @@ STRIPE_WEBHOOK_SECRET=
 TEXTBELT_API_KEY=
 TWILIO_ACCOUNT_SID=
 TWILIO_AUTH_TOKEN=
+NEXT_PUBLIC_GA_MEASUREMENT_ID=
 ```
 
 ## Recent Issues Resolved
