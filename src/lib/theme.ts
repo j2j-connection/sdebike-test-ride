@@ -26,20 +26,20 @@ export interface ShopTheme {
 const SHOP_THEMES: Record<string, ShopTheme> = {
   'sole-bicycles': {
     colors: {
-      primary: '#7DD3C0',
-      secondary: '#5FB3A1',
-      primaryHover: '#6BC7B3',
-      secondaryHover: '#4FA08A',
-      accent: '#059669',
-      accentHover: '#047857'
+      primary: '#4A9B8E',
+      secondary: '#3A8B7D',
+      primaryHover: '#3E8A7C',
+      secondaryHover: '#2F7A6B',
+      accent: '#2D6A5D',
+      accentHover: '#245A4E'
     },
     gradients: {
-      header: 'linear-gradient(to right, #7DD3C0, #5FB3A1)',
-      button: 'linear-gradient(to right, #059669, #047857)',
-      buttonHover: 'linear-gradient(to right, #047857, #036749)'
+      header: 'linear-gradient(to right, #4A9B8E, #3A8B7D)',
+      button: 'linear-gradient(to right, #2D6A5D, #245A4E)',
+      buttonHover: 'linear-gradient(to right, #245A4E, #1E4D42)'
     },
     borders: {
-      selected: 'border-teal-500',
+      selected: 'border-teal-600',
       selectedBg: 'bg-teal-50'
     }
   },
