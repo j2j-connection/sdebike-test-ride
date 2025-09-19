@@ -93,6 +93,41 @@ export async function getShopBySlug(slug: string): Promise<Shop | null> {
           updated_at: new Date().toISOString()
         }
       }
+
+      // Temporary fallback for Sole Bicycles while database is being set up
+      if (slug === 'sole-bicycles') {
+        console.log('✅ Using temporary fallback data for Sole Bicycles with logo: /sole-bicycles-logo.svg')
+        return {
+          id: 'temp-sole-bicycles',
+          slug: 'sole-bicycles',
+          name: 'Sole Bicycles',
+          business_name: 'Sole Bicycles LLC',
+          description: 'Premium bicycle sales and test rides featuring Solé Bicycle Co. electric bikes, single speeds, cruisers, and step-through models. Located in Los Angeles, experience our curated selection with our convenient digital test ride system.',
+          email: 'info@solebicycles.com',
+          phone: '(555) 999-BIKE',
+          address: null,
+          website_url: 'https://www.solebicycles.com',
+          logo_url: '/sole-bicycles-logo.svg',
+          primary_color: '#7DD3C0',
+          secondary_color: '#5FB3A1',
+          custom_css: '',
+          default_test_duration_minutes: 30,
+          authorization_amount_cents: 100,
+          require_id_photo: true,
+          require_waiver: true,
+          stripe_account_id: '',
+          textbelt_api_key: '',
+          twilio_account_sid: '',
+          twilio_auth_token: '',
+          subscription_tier: 'basic',
+          subscription_status: 'active',
+          trial_ends_at: '',
+          is_active: true,
+          onboarded_at: new Date().toISOString(),
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }
+      }
       
       return null
     }
@@ -168,18 +203,67 @@ export async function getAllShops(): Promise<Shop[]> {
  */
 export async function getShopBikeInventory(shopId: string): Promise<BikeInventoryItem[]> {
   try {
+    // For current single-tenant schema, just get all available bikes
+    // TODO: Add shop_id filtering when multi-tenant schema is fully deployed
     const { data, error } = await supabase
       .from('bike_inventory')
       .select('*')
-      .eq('shop_id', shopId)
       .eq('is_available', true)
       .order('brand, model')
-    
+
     if (error) {
-      console.error('Error fetching bike inventory:', error)
+      console.log('📋 bike_inventory table not found, using fallback inventory for shop:', shopId)
+
+      // Return shop-specific fallback inventory
+      if (shopId.includes('sole-bicycles') || shopId === 'temp-sole-bicycles') {
+        return [
+          {
+            id: 'fallback-1',
+            shop_id: shopId,
+            model: 'e-Commuter',
+            brand: 'Solé Bicycle Co.',
+            description: 'Electric commuter bike - Available in Overthrow, Duke, and Whaler designs. Perfect for daily commuting. $1,299',
+            is_available: true,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          },
+          {
+            id: 'fallback-2',
+            shop_id: shopId,
+            model: 'e(24)',
+            brand: 'Solé Bicycle Co.',
+            description: 'Premium electric bike - Available in Overthrow, el Tigre, Duke, Whaler, and Ballona designs. $1,799',
+            is_available: true,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          },
+          {
+            id: 'fallback-3',
+            shop_id: shopId,
+            model: 'The Single Speed / Fixed Gear',
+            brand: 'Solé Bicycle Co.',
+            description: 'Classic single speed bike - Available in multiple colorways including Overthrow, OFW, and el Tigre. $199-$299',
+            is_available: true,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          },
+          {
+            id: 'fallback-4',
+            shop_id: shopId,
+            model: 'The Coastal Cruiser',
+            brand: 'Solé Bicycle Co.',
+            description: 'Classic beach cruiser - Available in Hoover and Nine-O designs. Perfect for leisurely coastal rides. $229.99',
+            is_available: true,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          }
+        ]
+      }
+
+      // Default fallback for other shops
       return []
     }
-    
+
     return data || []
   } catch (error) {
     console.error('Error in getShopBikeInventory:', error)

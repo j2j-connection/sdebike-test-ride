@@ -8,6 +8,8 @@ import VerificationStep from "@/components/steps/VerificationStep"
 import PaymentStep from "@/components/PaymentStep"
 import ConfirmationStep from "@/components/steps/ConfirmationStep"
 import SuccessScreen from "@/components/steps/SuccessScreen"
+import { Shop } from '@/lib/services/shopService'
+import { getThemeClasses } from '@/lib/theme'
 
 interface FormData {
   name?: string
@@ -37,10 +39,23 @@ const STEPS = [
   { id: 5, name: "Confirmation", component: ConfirmationStep }
 ]
 
-export default function TestDriveWidget() {
+interface TestDriveWidgetProps {
+  shop: Shop
+}
+
+export default function TestDriveWidget({ shop }: TestDriveWidgetProps) {
+  console.log('🏪 TestDriveWidget received shop:', {
+    name: shop.name,
+    logo_url: shop.logo_url,
+    primary_color: shop.primary_color
+  })
+
   const [currentStep, setCurrentStep] = useState(1)
   const [formData, setFormData] = useState<FormData>({})
   const [completedData, setCompletedData] = useState<CompletedData | null>(null)
+
+  // Get theme classes for consistent styling
+  const themeClasses = getThemeClasses(shop)
 
   const handleStepUpdate = (stepData: Partial<FormData>) => {
     setFormData(prev => ({ ...prev, ...stepData }))
@@ -152,11 +167,18 @@ export default function TestDriveWidget() {
       <div className="max-w-md mx-auto w-full">
         {/* Header */}
         <div className="relative text-center mb-4 pt-2">
-          <div className="bg-gradient-to-r from-blue-400 to-blue-600 text-white px-4 py-3 rounded-lg shadow-md mb-2">
+          <div
+            className="text-white px-4 py-3 rounded-lg shadow-md mb-2"
+            style={themeClasses.headerGradient}
+          >
             <div className="flex items-center justify-center gap-3 mb-1">
               <img
-                src="/logo.png"
-                alt="San Diego Electric Bike Logo"
+                src={
+                  shop.slug === 'sole-bicycles'
+                    ? '/sole-bicycles-logo.svg'
+                    : shop.logo_url || "/logo.png"
+                }
+                alt={`${shop.name} Logo`}
                 className="w-10 h-10 object-contain bg-white rounded-lg p-1"
                 loading="eager"
                 decoding="sync"
@@ -165,9 +187,9 @@ export default function TestDriveWidget() {
                   e.currentTarget.src = "/file.svg"
                 }}
               />
-              <h1 className="text-lg font-bold">San Diego Electric Bike</h1>
+              <h1 className="text-lg font-bold">{shop.name}</h1>
             </div>
-            <p className="text-sm text-blue-100">Test Ride Sign-Up</p>
+            <p className="text-sm opacity-90">Test Ride Sign-Up</p>
           </div>
         </div>
 
@@ -178,6 +200,8 @@ export default function TestDriveWidget() {
             <CurrentStepComponent
               key={currentStep}
               data={formData}
+              shopId={shop.id}
+              shop={shop}
               onUpdate={handleStepUpdate}
               onNext={handleNext}
               onBack={handleBack}

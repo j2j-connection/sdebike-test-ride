@@ -9,6 +9,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Upload, CreditCard, ArrowRight, ArrowLeft, AlertCircle, Check } from "lucide-react"
 import { motion } from "framer-motion"
 import { supabase } from "@/lib/supabase"
+import { getButtonStyles } from '@/lib/theme'
 // We generate a PNG waiver to fit the storage bucket's image-only allowed types
 
 interface VerificationStepProps {
@@ -18,12 +19,13 @@ interface VerificationStepProps {
     signature_data?: string
     waiver_url?: string
   }
+  shop?: { slug: string }
   onUpdate: (data: { id_photo_url: string; waiver_signed: boolean; signature_data: string; waiver_url?: string }) => void
   onNext: () => void
   onBack: () => void
 }
 
-export default function VerificationStep({ data, onUpdate, onNext, onBack }: VerificationStepProps) {
+export default function VerificationStep({ data, shop, onUpdate, onNext, onBack }: VerificationStepProps) {
   const [formData, setFormData] = useState({
     id_photo_url: data.id_photo_url || "",
     waiver_signed: data.waiver_signed || false,
@@ -344,10 +346,11 @@ export default function VerificationStep({ data, onUpdate, onNext, onBack }: Ver
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back
               </Button>
-              <Button 
-                type="submit" 
-                disabled={!formData.id_photo_url || !formData.waiver_signed || !formData.signature_data} 
-                className="flex-1 h-10 font-semibold bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 disabled:opacity-50"
+              <Button
+                type="submit"
+                disabled={!formData.id_photo_url || !formData.waiver_signed || !formData.signature_data}
+                className="flex-1 h-10 font-semibold text-white disabled:opacity-50"
+                style={shop ? getButtonStyles(shop) : { background: 'linear-gradient(to right, #2563EB, #1D4ED8)' }}
               >
                 Continue
                 <ArrowRight className="w-4 h-4 ml-2" />

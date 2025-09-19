@@ -1,4 +1,6 @@
 import TestDriveWidget from '@/components/TestDriveWidget'
+import { getShopBySlug } from '@/lib/services/shopService'
+import { notFound } from 'next/navigation'
 
 interface ShopPageProps {
   params: {
@@ -7,6 +9,12 @@ interface ShopPageProps {
 }
 
 export default async function ShopPage({ params }: ShopPageProps) {
-  // For SD Electric Bike, just use the original widget exactly as it was
-  return <TestDriveWidget />
+  const { slug } = await params
+  const shop = await getShopBySlug(slug)
+
+  if (!shop) {
+    notFound()
+  }
+
+  return <TestDriveWidget shop={shop} />
 }

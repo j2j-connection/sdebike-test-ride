@@ -1,45 +1,82 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Bike, Zap, ArrowRight, ArrowLeft } from "lucide-react"
 import { motion } from "framer-motion"
+import { getShopBikeInventory, BikeInventoryItem } from '@/lib/services/shopService'
+import { getButtonStyles, getThemeClasses } from '@/lib/theme'
 
-const BIKE_BRANDS = {
-  rad_power: {
-    name: "Rad Power Bikes",
-    description: "Any Rad model",
-    icon: Zap,
-    type: "Brand"
+// Default fallback bikes if database is not available
+const DEFAULT_BIKES = [
+  {
+    id: 'default-1',
+    model: 'e-Commuter',
+    brand: 'Solé Bicycle Co.',
+    description: 'Electric commuter bike - Available in multiple designs. Perfect for daily commuting.',
+    is_available: true
   },
-  aventon: {
-    name: "Aventon",
-    description: "Any Aventon model",
-    icon: Bike,
-    type: "Brand"
+  {
+    id: 'default-2',
+    model: 'The Single Speed / Fixed Gear',
+    brand: 'Solé Bicycle Co.',
+    description: 'Classic single speed bike - Available in multiple colorways. Perfect for city riding.',
+    is_available: true
   },
-  other: {
-    name: "Other",
-    description: "Another brand/model",
-    icon: Bike,
-    type: "Brand"
+  {
+    id: 'default-3',
+    model: 'The Coastal Cruiser',
+    brand: 'Solé Bicycle Co.',
+    description: 'Classic beach cruiser - Perfect for leisurely coastal rides.',
+    is_available: true
   }
-}
+]
 
 interface BikeSelectionStepProps {
   data: {
     bike_model?: string
   }
+  shopId?: string
+  shop?: { primary_color: string; secondary_color: string; slug: string }
   onUpdate: (data: { bike_model: string; start_time: Date; duration_hours: number }) => void
   onNext: () => void
   onBack: () => void
 }
 
-export default function BikeSelectionStep({ data, onUpdate, onNext, onBack }: BikeSelectionStepProps) {
+export default function BikeSelectionStep({ data, shopId, shop, onUpdate, onNext, onBack }: BikeSelectionStepProps) {
   const [selectedBike, setSelectedBike] = useState(data.bike_model || "")
+  const [bikes, setBikes] = useState<BikeInventoryItem[]>([])
+  const [loading, setLoading] = useState(true)
+
+  // Get theme classes if shop is provided
+  const themeClasses = shop ? getThemeClasses(shop) : null
+
+  useEffect(() => {
+    async function loadBikes() {
+      if (shopId) {
+        try {
+          const inventory = await getShopBikeInventory(shopId)
+          if (inventory && inventory.length > 0) {
+            setBikes(inventory)
+          } else {
+            console.log('No bike inventory found, using default bikes')
+            setBikes(DEFAULT_BIKES as BikeInventoryItem[])
+          }
+        } catch (error) {
+          console.error('Error loading bike inventory:', error)
+          setBikes(DEFAULT_BIKES as BikeInventoryItem[])
+        }
+      } else {
+        setBikes(DEFAULT_BIKES as BikeInventoryItem[])
+      }
+      setLoading(false)
+    }
+
+    loadBikes()
+  }, [shopId])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -72,36 +109,42 @@ export default function BikeSelectionStep({ data, onUpdate, onNext, onBack }: Bi
                  Choose Brand
               </Label>
               <div className="space-y-2">
-                {Object.entries(BIKE_BRANDS).map(([key, item]) => {
-                  const IconComponent = item.icon
-                  return (
-                    <motion.div key={key} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                      <Card 
-                        className={`cursor-pointer transition-all duration-200 border-2 w-full ${
-                          selectedBike === key 
-                            ? 'border-blue-500 bg-blue-50' 
-                            : 'border-slate-200 hover:border-slate-300'
-                        }`}
-                        onClick={() => setSelectedBike(key)}
-                      >
-                        <CardContent className="p-3">
-                          <div className="flex items-center gap-3 w-full">
-                            <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                              <IconComponent className="w-5 h-5 text-slate-600" />
+                {loading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="text-sm text-slate-500">Loading bikes...</div>
+                  </div>
+                ) : (
+                  bikes.map((bike) => {
+                    const bikeKey = `${bike.brand}-${bike.model}`.toLowerCase().replace(/\s+/g, '-')
+                    return (
+                      <motion.div key={bike.id || bikeKey} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                        <Card
+                          className={`cursor-pointer transition-all duration-200 border-2 w-full ${
+                            selectedBike === bikeKey
+                              ? (themeClasses?.selectedCard || 'border-blue-500 bg-blue-50')
+                              : 'border-slate-200 hover:border-slate-300'
+                          }`}
+                          onClick={() => setSelectedBike(bikeKey)}
+                        >
+                          <CardContent className="p-3">
+                            <div className="flex items-center gap-3 w-full">
+                              <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <Bike className="w-5 h-5 text-slate-600" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <h3 className="font-semibold text-slate-800 text-sm">{bike.model}</h3>
+                                <p className="text-xs text-slate-600 break-words">{bike.description || `${bike.brand} ${bike.model}`}</p>
+                              </div>
+                              <Badge variant="outline" className="text-xs flex-shrink-0 ml-2">
+                                {bike.brand}
+                              </Badge>
                             </div>
-                            <div className="flex-1 min-w-0">
-                              <h3 className="font-semibold text-slate-800 text-sm">{item.name}</h3>
-                              <p className="text-xs text-slate-600 break-words">{item.description}</p>
-                            </div>
-                            <Badge variant="outline" className="text-xs flex-shrink-0 ml-2">
-                              {item.type}
-                            </Badge>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </motion.div>
-                  )
-                })}
+                          </CardContent>
+                        </Card>
+                      </motion.div>
+                    )
+                  })
+                )}
               </div>
             </div>
 
@@ -111,10 +154,11 @@ export default function BikeSelectionStep({ data, onUpdate, onNext, onBack }: Bi
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back
               </Button>
-              <Button 
+              <Button
                 type="submit"
                 disabled={!selectedBike}
-                className="flex-1 h-10 font-semibold bg-gradient-to-r from-lime-500 to-lime-600 hover:from-lime-600 hover:to-lime-700 disabled:opacity-50"
+                className="flex-1 h-10 font-semibold text-white disabled:opacity-50"
+                style={shop ? getButtonStyles(shop) : { background: 'linear-gradient(to right, #2563EB, #1D4ED8)' }}
               >
                 Continue
                 <ArrowRight className="w-4 h-4 ml-2" />

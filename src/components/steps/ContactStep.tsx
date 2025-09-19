@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
 import { User, Phone, Mail, ArrowRight } from "lucide-react"
 import { motion } from "framer-motion"
+import { getButtonStyles } from '@/lib/theme'
 
 interface ContactStepProps {
   data: {
@@ -14,6 +15,7 @@ interface ContactStepProps {
     phone?: string
     email?: string
   }
+  shop?: { slug: string; primary_color: string; secondary_color: string }
   onUpdate: (data: { name: string; phone: string; email?: string }) => void
   onNext: () => void
   onBack: () => void
@@ -25,7 +27,7 @@ interface FormErrors {
   email?: string
 }
 
-export default function ContactStep({ data, onUpdate, onNext }: ContactStepProps) {
+export default function ContactStep({ data, shop, onUpdate, onNext }: ContactStepProps) {
   const [formData, setFormData] = useState({
     name: data.name || "",
     phone: data.phone || "",
@@ -116,7 +118,11 @@ export default function ContactStep({ data, onUpdate, onNext }: ContactStepProps
             </div>
 
             <div className="pt-2">
-              <Button type="submit" className="w-full h-10 font-semibold bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700">
+              <Button
+                type="submit"
+                className="w-full h-10 font-semibold text-white"
+                style={shop ? getButtonStyles(shop) : { background: 'linear-gradient(to right, #2563EB, #1D4ED8)' }}
+              >
                 Choose Your Bike
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
