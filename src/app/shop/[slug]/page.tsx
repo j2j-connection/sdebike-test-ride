@@ -39,5 +39,6 @@ export default async function ShopPage({ params }: ShopPageProps) {
     notFound()
   }
 
+
   return <TestDriveWidget shop={shop} />
 }

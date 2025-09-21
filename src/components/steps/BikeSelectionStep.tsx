@@ -14,23 +14,23 @@ import { getButtonStyles, getThemeClasses } from '@/lib/theme'
 const DEFAULT_BIKES = [
   {
     id: 'default-1',
-    model: 'RadRunner 3 Plus',
-    brand: 'Rad Power Bikes',
-    description: 'Utility electric bike with cargo capacity. Perfect for commuting and hauling gear.',
+    model: 'Pace 500.3 Step-Through',
+    brand: 'Aventon',
+    description: 'Powerful cruiser ebike with 500W motor, top speed 28 mph, up to 60 miles range. Perfect for commuting.',
     is_available: true
   },
   {
     id: 'default-2',
-    model: 'Level.2',
-    brand: 'Aventon',
-    description: 'Commuter electric bike with integrated battery and premium components.',
+    model: 'RadRover 6 Plus',
+    brand: 'Rad Power Bikes',
+    description: 'Flagship model for adventures, 750W motor, up to 45+ miles per charge. Built for exploration.',
     is_available: true
   },
   {
     id: 'default-3',
-    model: 'Pace 500.3',
-    brand: 'Aventon',
-    description: 'Step-through electric bike ideal for casual riders and commuters.',
+    model: 'Ultra Urban',
+    brand: 'Zooz',
+    description: 'Patented Chromoly steel frame, 750W motor with 1800W peak, 20 Ah battery. Urban commuter.',
     is_available: true
   }
 ]
@@ -58,11 +58,10 @@ export default function BikeSelectionStep({ data, shopId, shop, onUpdate, onNext
     async function loadBikes() {
       if (shopId) {
         try {
-          const inventory = await getShopBikeInventory(shopId)
+          const inventory = await getShopBikeInventory(shopId, shop?.slug)
           if (inventory && inventory.length > 0) {
             setBikes(inventory)
           } else {
-            console.log('No bike inventory found, using default bikes')
             setBikes(DEFAULT_BIKES as BikeInventoryItem[])
           }
         } catch (error) {

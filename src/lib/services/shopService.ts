@@ -201,7 +201,7 @@ export async function getAllShops(): Promise<Shop[]> {
 /**
  * Get bike inventory for a specific shop
  */
-export async function getShopBikeInventory(shopId: string): Promise<BikeInventoryItem[]> {
+export async function getShopBikeInventory(shopId: string, shopSlug?: string): Promise<BikeInventoryItem[]> {
   try {
     // For current single-tenant schema, just get all available bikes
     // TODO: Add shop_id filtering when multi-tenant schema is fully deployed
@@ -213,9 +213,26 @@ export async function getShopBikeInventory(shopId: string): Promise<BikeInventor
 
     if (error) {
       console.log('📋 bike_inventory table not found, using fallback inventory for shop:', shopId)
+    } else if (data && data.length > 0) {
+      // Check if this is the right inventory for the shop
+      const firstBike = data[0]
+      console.log('📊 Database returned', data.length, 'bikes, first bike brand:', firstBike.brand)
 
-      // Return shop-specific fallback inventory
-      if (shopId.includes('sole-bicycles') || shopId === 'temp-sole-bicycles') {
+      // If SD Electric Bike is getting Sole Bicycles inventory, use fallback instead
+      if ((shopSlug === 'sd-electric-bike' || shopId.includes('sd-electric-bike')) && firstBike.brand === 'Solé Bicycle Co.') {
+        console.log('⚠️ SD Electric Bike got Sole Bicycles inventory, using fallback')
+        // Fall through to fallback logic
+      } else {
+        console.log('✅ Using database inventory')
+        return data || []
+      }
+    }
+
+    // Fallback inventory logic
+    console.log('🔄 Using fallback inventory for shop:', shopId)
+
+    // Return shop-specific fallback inventory
+    if (shopId.includes('sole-bicycles') || shopId === 'temp-sole-bicycles') {
         return [
           {
             id: 'fallback-sole-1',
@@ -266,9 +283,9 @@ export async function getShopBikeInventory(shopId: string): Promise<BikeInventor
           {
             id: 'fallback-sd-1',
             shop_id: shopId,
-            model: 'RadRunner 3 Plus',
-            brand: 'Rad Power Bikes',
-            description: 'Utility electric bike with cargo capacity. Perfect for commuting and hauling gear.',
+            model: 'Pace 500.3 Step-Through',
+            brand: 'Aventon',
+            description: 'Powerful cruiser ebike with 500W motor, top speed 28 mph, up to 60 miles range. Perfect for commuting.',
             is_available: true,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
@@ -276,9 +293,9 @@ export async function getShopBikeInventory(shopId: string): Promise<BikeInventor
           {
             id: 'fallback-sd-2',
             shop_id: shopId,
-            model: 'Level.2',
-            brand: 'Aventon',
-            description: 'Commuter electric bike with integrated battery and premium components.',
+            model: 'RadRover 6 Plus',
+            brand: 'Rad Power Bikes',
+            description: 'Flagship model for adventures, 750W motor, up to 45+ miles per charge. Built for exploration.',
             is_available: true,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
@@ -286,9 +303,29 @@ export async function getShopBikeInventory(shopId: string): Promise<BikeInventor
           {
             id: 'fallback-sd-3',
             shop_id: shopId,
-            model: 'Pace 500.3',
+            model: 'Ultra Urban',
+            brand: 'Zooz',
+            description: 'Patented Chromoly steel frame, 750W motor with 1800W peak, 20 Ah battery. Urban commuter.',
+            is_available: true,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          },
+          {
+            id: 'fallback-sd-4',
+            shop_id: shopId,
+            model: 'eScout 10D',
+            brand: 'Benno',
+            description: 'Commuter e-utility bike with Bosch Performance motor, up to 28 mph. Great for cargo.',
+            is_available: true,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          },
+          {
+            id: 'fallback-sd-5',
+            shop_id: shopId,
+            model: 'Ramblas eMTB',
             brand: 'Aventon',
-            description: 'Step-through electric bike ideal for casual riders and commuters.',
+            description: 'First Aventon mid-drive mountain e-bike, top speed 20 mph, up to 80 miles range. Trail ready.',
             is_available: true,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
@@ -298,9 +335,6 @@ export async function getShopBikeInventory(shopId: string): Promise<BikeInventor
 
       // Default fallback for other shops
       return []
-    }
-
-    return data || []
   } catch (error) {
     console.error('Error in getShopBikeInventory:', error)
     return []
