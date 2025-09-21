@@ -10,27 +10,27 @@ import { motion } from "framer-motion"
 import { getShopBikeInventory, BikeInventoryItem } from '@/lib/services/shopService'
 import { getButtonStyles, getThemeClasses } from '@/lib/theme'
 
-// Default fallback bikes if database is not available
+// Default fallback bikes if database is not available (SD Electric Bike default)
 const DEFAULT_BIKES = [
   {
     id: 'default-1',
-    model: 'e-Commuter',
-    brand: 'Solé Bicycle Co.',
-    description: 'Electric commuter bike - Available in multiple designs. Perfect for daily commuting.',
+    model: 'RadRunner 3 Plus',
+    brand: 'Rad Power Bikes',
+    description: 'Utility electric bike with cargo capacity. Perfect for commuting and hauling gear.',
     is_available: true
   },
   {
     id: 'default-2',
-    model: 'The Single Speed / Fixed Gear',
-    brand: 'Solé Bicycle Co.',
-    description: 'Classic single speed bike - Available in multiple colorways. Perfect for city riding.',
+    model: 'Level.2',
+    brand: 'Aventon',
+    description: 'Commuter electric bike with integrated battery and premium components.',
     is_available: true
   },
   {
     id: 'default-3',
-    model: 'The Coastal Cruiser',
-    brand: 'Solé Bicycle Co.',
-    description: 'Classic beach cruiser - Perfect for leisurely coastal rides.',
+    model: 'Pace 500.3',
+    brand: 'Aventon',
+    description: 'Step-through electric bike ideal for casual riders and commuters.',
     is_available: true
   }
 ]

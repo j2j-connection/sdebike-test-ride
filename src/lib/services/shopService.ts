@@ -218,7 +218,7 @@ export async function getShopBikeInventory(shopId: string): Promise<BikeInventor
       if (shopId.includes('sole-bicycles') || shopId === 'temp-sole-bicycles') {
         return [
           {
-            id: 'fallback-1',
+            id: 'fallback-sole-1',
             shop_id: shopId,
             model: 'e-Commuter',
             brand: 'Solé Bicycle Co.',
@@ -228,7 +228,7 @@ export async function getShopBikeInventory(shopId: string): Promise<BikeInventor
             updated_at: new Date().toISOString()
           },
           {
-            id: 'fallback-2',
+            id: 'fallback-sole-2',
             shop_id: shopId,
             model: 'e(24)',
             brand: 'Solé Bicycle Co.',
@@ -238,7 +238,7 @@ export async function getShopBikeInventory(shopId: string): Promise<BikeInventor
             updated_at: new Date().toISOString()
           },
           {
-            id: 'fallback-3',
+            id: 'fallback-sole-3',
             shop_id: shopId,
             model: 'The Single Speed / Fixed Gear',
             brand: 'Solé Bicycle Co.',
@@ -248,11 +248,47 @@ export async function getShopBikeInventory(shopId: string): Promise<BikeInventor
             updated_at: new Date().toISOString()
           },
           {
-            id: 'fallback-4',
+            id: 'fallback-sole-4',
             shop_id: shopId,
             model: 'The Coastal Cruiser',
             brand: 'Solé Bicycle Co.',
             description: 'Classic beach cruiser - Available in Hoover and Nine-O designs. Perfect for leisurely coastal rides. $229.99',
+            is_available: true,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          }
+        ]
+      }
+
+      // SD Electric Bike fallback inventory
+      if (shopId.includes('sd-electric-bike') || shopId === 'temp-sd-electric-bike') {
+        return [
+          {
+            id: 'fallback-sd-1',
+            shop_id: shopId,
+            model: 'RadRunner 3 Plus',
+            brand: 'Rad Power Bikes',
+            description: 'Utility electric bike with cargo capacity. Perfect for commuting and hauling gear.',
+            is_available: true,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          },
+          {
+            id: 'fallback-sd-2',
+            shop_id: shopId,
+            model: 'Level.2',
+            brand: 'Aventon',
+            description: 'Commuter electric bike with integrated battery and premium components.',
+            is_available: true,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          },
+          {
+            id: 'fallback-sd-3',
+            shop_id: shopId,
+            model: 'Pace 500.3',
+            brand: 'Aventon',
+            description: 'Step-through electric bike ideal for casual riders and commuters.',
             is_available: true,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
