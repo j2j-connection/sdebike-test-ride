@@ -47,6 +47,13 @@ export interface BikeInventoryItem {
 /**
  * Get a shop by its URL slug
  */
+// Map slugs to logo URLs (since logo_url is not in database)
+const LOGO_URLS: Record<string, string> = {
+  'sd-electric-bike': '/logo.png',
+  'sole-bicycles': '/sole-bicycles-logo.svg',
+  'flye': '/flye.png.avif'
+}
+
 export async function getShopBySlug(slug: string): Promise<Shop | null> {
   try {
     const { data, error } = await supabase
@@ -55,122 +62,19 @@ export async function getShopBySlug(slug: string): Promise<Shop | null> {
       .eq('slug', slug)
       .eq('is_active', true)
       .single()
-    
-    if (error) {
-      console.log(`📋 Shop table not found, using fallback for slug: ${slug}`)
-      
-      // Temporary fallback for SD Electric Bike while database is being set up
-      if (slug === 'sd-electric-bike') {
-        console.log('✅ Using temporary fallback data for SD Electric Bike')
-        return {
-          id: 'temp-sd-electric-bike',
-          slug: 'sd-electric-bike',
-          name: 'San Diego Electric Bike',
-          business_name: 'SD Electric Bike',
-          description: 'Premium electric bike sales and test rides in Solana Beach. Located at 101 S. Hwy 101, Solana Beach, CA 92075. Experience the latest e-bikes with our convenient digital test ride system.',
-          email: 'sdebike@gmail.com',
-          phone: '(858) 345-1030',
-          address: null,
-          website_url: '',
-          logo_url: '/logo.png',
-          primary_color: '#3B82F6',
-          secondary_color: '#1E40AF',
-          custom_css: '',
-          default_test_duration_minutes: 30,
-          authorization_amount_cents: 100,
-          require_id_photo: true,
-          require_waiver: true,
-          stripe_account_id: '',
-          textbelt_api_key: '',
-          twilio_account_sid: '',
-          twilio_auth_token: '',
-          subscription_tier: 'basic',
-          subscription_status: 'active',
-          trial_ends_at: '',
-          is_active: true,
-          onboarded_at: new Date().toISOString(),
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }
-      }
 
-      // Temporary fallback for Sole Bicycles while database is being set up
-      if (slug === 'sole-bicycles') {
-        console.log('✅ Using temporary fallback data for Sole Bicycles with logo: /sole-bicycles-logo.svg')
-        return {
-          id: 'temp-sole-bicycles',
-          slug: 'sole-bicycles',
-          name: 'Sole Bicycles',
-          business_name: 'Sole Bicycles LLC',
-          description: 'Premium bicycle sales and test rides featuring Solé Bicycle Co. electric bikes, single speeds, cruisers, and step-through models. Located in Los Angeles, experience our curated selection with our convenient digital test ride system.',
-          email: 'info@solebicycles.com',
-          phone: '(555) 999-BIKE',
-          address: null,
-          website_url: 'https://www.solebicycles.com',
-          logo_url: '/sole-bicycles-logo.svg',
-          primary_color: '#4A9B8E',
-          secondary_color: '#3A8B7D',
-          custom_css: '',
-          default_test_duration_minutes: 30,
-          authorization_amount_cents: 100,
-          require_id_photo: true,
-          require_waiver: true,
-          stripe_account_id: '',
-          textbelt_api_key: '',
-          twilio_account_sid: '',
-          twilio_auth_token: '',
-          subscription_tier: 'basic',
-          subscription_status: 'active',
-          trial_ends_at: '',
-          is_active: true,
-          onboarded_at: new Date().toISOString(),
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }
-      }
-      
+    if (error) {
+      console.error(`❌ Error fetching shop ${slug}:`, error.message)
       return null
     }
-    
-    return data
-  } catch (error) {
-    console.log(`📋 Exception in getShopBySlug for slug: ${slug}`, error.message)
-    
-    // Temporary fallback for SD Electric Bike while database is being set up
-    if (slug === 'sd-electric-bike') {
-      console.log('✅ Using temporary fallback data for SD Electric Bike (catch)')
-      return {
-        id: 'temp-sd-electric-bike',
-        slug: 'sd-electric-bike',
-        name: 'San Diego Electric Bike',
-        business_name: 'SD Electric Bike',
-        description: 'Premium electric bike sales and test rides in Solana Beach. Located at 101 S. Hwy 101, Solana Beach, CA 92075. Experience the latest e-bikes with our convenient digital test ride system.',
-        email: 'sdebike@gmail.com',
-        phone: '(858) 345-1030',
-        address: null,
-        website_url: '',
-        logo_url: '/logo.png',
-        primary_color: '#3B82F6',
-        secondary_color: '#1E40AF',
-        custom_css: '',
-        default_test_duration_minutes: 30,
-        authorization_amount_cents: 100,
-        require_id_photo: true,
-        require_waiver: true,
-        stripe_account_id: '',
-        textbelt_api_key: '',
-        twilio_account_sid: '',
-        twilio_auth_token: '',
-        subscription_tier: 'basic',
-        subscription_status: 'active',
-        trial_ends_at: '',
-        is_active: true,
-        onboarded_at: new Date().toISOString(),
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }
+
+    // Add logo_url based on slug (not in database)
+    return {
+      ...data,
+      logo_url: LOGO_URLS[slug] || '/logo.png'
     }
-    
+  } catch (error: any) {
+    console.error(`❌ Exception in getShopBySlug for slug: ${slug}:`, error?.message)
     return null
   }
 }
@@ -326,6 +230,42 @@ export async function getShopBikeInventory(shopId: string, shopSlug?: string): P
             model: 'Ramblas eMTB',
             brand: 'Aventon',
             description: 'First Aventon mid-drive mountain e-bike, top speed 20 mph, up to 80 miles range. Trail ready.',
+            is_available: true,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          }
+        ]
+      }
+
+      // Flye fallback inventory
+      if (shopId.includes('flye') || shopId === 'temp-flye') {
+        return [
+          {
+            id: 'fallback-flye-1',
+            shop_id: shopId,
+            model: 'City Cruiser',
+            brand: 'Flye',
+            description: 'Premium urban e-bike with sleek design, 750W motor, 50+ mile range. Perfect for city commuting.',
+            is_available: true,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          },
+          {
+            id: 'fallback-flye-2',
+            shop_id: shopId,
+            model: 'Mountain Explorer',
+            brand: 'Flye',
+            description: 'All-terrain electric mountain bike, 1000W motor, dual suspension. Conquer any trail.',
+            is_available: true,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          },
+          {
+            id: 'fallback-flye-3',
+            shop_id: shopId,
+            model: 'Folding Commuter',
+            brand: 'Flye',
+            description: 'Compact folding e-bike, 500W motor, lightweight aluminum frame. Take it anywhere.',
             is_available: true,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()

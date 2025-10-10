@@ -37,10 +37,8 @@ export async function middleware(request: NextRequest) {
     })
   }
   
-  // Handle root path - redirect to default shop or show shop selector
+  // Handle root path - redirect to default shop
   if (pathname === '/') {
-    // For now, redirect to SD Electric Bike (legacy behavior)
-    // Later we can show a shop selector or landing page
     return NextResponse.redirect(new URL('/shop/sd-electric-bike', request.url))
   }
   

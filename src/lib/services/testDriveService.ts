@@ -30,6 +30,66 @@ export interface TestDriveResult {
   testDrive: TestDrive
 }
 
+export interface CreateRentalData {
+  customer: {
+    name: string
+    phone: string
+    email?: string
+    id_photo_url: string
+    signature_data: string
+    waiver_url?: string
+    waiver_signed: boolean
+    submission_ip?: string
+    submitted_at?: string
+  }
+  rental: {
+    bike_model: string
+    bike_category: string
+    rental_type: 'rental'
+    rental_duration: number
+    rental_price: number
+    start_time: Date
+    expected_return_time: Date
+    payment_intent_id?: string
+  }
+}
+
+export interface RentalResult {
+  customer: Customer
+  rental: TestDrive
+}
+
+export interface CartItem {
+  id: string
+  bike_category: string
+  rental_duration: number
+  rental_price: number
+}
+
+export interface CreateCartRentalData {
+  customer: {
+    name: string
+    phone: string
+    email?: string
+    id_photo_url: string
+    signature_data: string
+    waiver_url?: string
+    waiver_signed: boolean
+    submission_ip?: string
+    submitted_at?: string
+  }
+  cart_items: CartItem[]
+  total_price: number
+  start_time: Date
+  expected_return_time: Date
+  payment_intent_id?: string
+}
+
+export interface CartRentalResult {
+  customer: Customer
+  rentals: TestDrive[]
+}
+
 export const testDriveService = {
   async createTestDrive(data: CreateTestDriveData, shopId?: string): Promise<TestDriveResult> {
     try {
@@ -122,10 +182,159 @@ export const testDriveService = {
     return data as (TestDrive & { customer: Customer })[]
   },
 
+  async createRental(data: CreateRentalData, shopId?: string): Promise<RentalResult> {
+    try {
+      // First create the customer
+      const customerData: CustomerInsert = {
+        name: data.customer.name,
+        phone: data.customer.phone,
+        email: data.customer.email || null,
+        id_photo_url: data.customer.id_photo_url,
+        signature_data: data.customer.signature_data,
+        ...(data.customer.waiver_url ? { waiver_url: data.customer.waiver_url as any } : {}),
+        waiver_signed: data.customer.waiver_signed
+      }
+      if (data.customer.submission_ip) (customerData as any).submission_ip = data.customer.submission_ip
+      if (data.customer.submitted_at) (customerData as any).submitted_at = data.customer.submitted_at
+
+      const { data: customer, error: customerError } = await supabase
+        .from('customers')
+        .insert(customerData)
+        .select()
+        .single()
+
+      if (customerError) {
+        console.error('Customer creation error:', customerError)
+        throw new Error(`Failed to create customer record: ${customerError.message}`)
+      }
+
+      // Update waiver_url if provided
+      if ((data.customer as any).waiver_url) {
+        try {
+          await supabase
+            .from('customers')
+            .update({ waiver_url: (data.customer as any).waiver_url } as any)
+            .eq('id', customer.id)
+        } catch (e) {
+          console.warn('waiver_url update skipped:', e)
+        }
+      }
+
+      // Create the rental (stored in test_drives table with rental fields)
+      const rentalData: any = {
+        customer_id: customer.id,
+        bike_model: data.rental.bike_model,
+        rental_type: data.rental.rental_type,
+        rental_duration: data.rental.rental_duration,
+        rental_price: data.rental.rental_price,
+        start_time: data.rental.start_time.toISOString(),
+        expected_return_time: data.rental.expected_return_time.toISOString(),
+        end_time: data.rental.expected_return_time.toISOString(), // For backwards compatibility
+        status: 'active'
+      }
+
+      const { data: rental, error: rentalError } = await supabase
+        .from('test_drives')
+        .insert(rentalData)
+        .select()
+        .single()
+
+      if (rentalError) {
+        console.error('Rental creation error:', rentalError)
+        // Clean up customer record if rental creation fails
+        await supabase.from('customers').delete().eq('id', customer.id)
+        throw new Error(`Failed to create rental record: ${rentalError.message}`)
+      }
+
+      return {
+        customer,
+        rental
+      }
+    } catch (error) {
+      console.error('Error creating rental:', error)
+      throw error
+    }
+  },
+
+  async createCartRental(data: CreateCartRentalData, shopId?: string): Promise<CartRentalResult> {
+    try {
+      // First create the customer
+      const customerData: CustomerInsert = {
+        name: data.customer.name,
+        phone: data.customer.phone,
+        email: data.customer.email || null,
+        id_photo_url: data.customer.id_photo_url,
+        signature_data: data.customer.signature_data,
+        ...(data.customer.waiver_url ? { waiver_url: data.customer.waiver_url as any } : {}),
+        waiver_signed: data.customer.waiver_signed
+      }
+      if (data.customer.submission_ip) (customerData as any).submission_ip = data.customer.submission_ip
+      if (data.customer.submitted_at) (customerData as any).submitted_at = data.customer.submitted_at
+
+      const { data: customer, error: customerError } = await supabase
+        .from('customers')
+        .insert(customerData)
+        .select()
+        .single()
+
+      if (customerError) {
+        console.error('Customer creation error:', customerError)
+        throw new Error(`Failed to create customer record: ${customerError.message}`)
+      }
+
+      // Update waiver_url if provided
+      if ((data.customer as any).waiver_url) {
+        try {
+          await supabase
+            .from('customers')
+            .update({ waiver_url: (data.customer as any).waiver_url } as any)
+            .eq('id', customer.id)
+        } catch (e) {
+          console.warn('waiver_url update skipped:', e)
+        }
+      }
+
+      // Create multiple rental records, one for each cart item
+      const rentalRecords = data.cart_items.map(item => ({
+        customer_id: customer.id,
+        bike_model: item.bike_category, // Use category as model for now
+        bike_category: item.bike_category,
+        rental_type: 'rental' as const,
+        rental_duration: item.rental_duration,
+        rental_price: item.rental_price,
+        start_time: data.start_time.toISOString(),
+        expected_return_time: data.expected_return_time.toISOString(),
+        end_time: data.expected_return_time.toISOString(), // For backwards compatibility
+        payment_intent_id: data.payment_intent_id,
+        status: 'active'
+      }))
+
+      const { data: rentals, error: rentalsError } = await supabase
+        .from('test_drives')
+        .insert(rentalRecords)
+        .select()
+
+      if (rentalsError) {
+        console.error('Rentals creation error:', rentalsError)
+        // Clean up customer record if rentals creation fails
+        await supabase.from('customers').delete().eq('id', customer.id)
+        throw new Error(`Failed to create rental records: ${rentalsError.message}`)
+      }
+
+      return {
+        customer,
+        rentals: rentals || []
+      }
+    } catch (error) {
+      console.error('Error creating cart rental:', error)
+      throw error
+    }
+  },
+
   async completeTestDrive(testDriveId: string): Promise<void> {
     const { error } = await supabase
       .from('test_drives')
-      .update({ 
+      .update({
         status: 'completed',
         updated_at: new Date().toISOString()
       })

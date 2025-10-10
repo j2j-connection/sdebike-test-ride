@@ -61,6 +61,25 @@ const SHOP_THEMES: Record<string, ShopTheme> = {
       selected: 'border-blue-500',
       selectedBg: 'bg-blue-50'
     }
+  },
+  'flye': {
+    colors: {
+      primary: '#22C55E',
+      secondary: '#16A34A',
+      primaryHover: '#16A34A',
+      secondaryHover: '#15803D',
+      accent: '#16A34A',
+      accentHover: '#15803D'
+    },
+    gradients: {
+      header: 'linear-gradient(to right, #22C55E, #16A34A)',
+      button: 'linear-gradient(to right, #16A34A, #15803D)',
+      buttonHover: 'linear-gradient(to right, #15803D, #166534)'
+    },
+    borders: {
+      selected: 'border-green-500',
+      selectedBg: 'bg-green-50'
+    }
   }
 }
 

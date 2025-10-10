@@ -14,6 +14,10 @@ interface SuccessScreenProps {
     start_time: Date
     end_time: Date
     bike_model: string
+    rental_type?: string
+    rental_duration?: number
+    rental_price?: number
+    expected_return_time?: Date
   }
   customer: {
     id: string
@@ -21,9 +25,10 @@ interface SuccessScreenProps {
     phone: string
   }
   onStartOver: () => void
+  isRental?: boolean
 }
 
-export default function SuccessScreen({ testDrive, customer, onStartOver }: SuccessScreenProps) {
+export default function SuccessScreen({ testDrive, customer, onStartOver, isRental = false }: SuccessScreenProps) {
   const [smsStatus, setSmsStatus] = useState<'sending' | 'sent' | 'failed'>('sending')
   const [smsProvider, setSmsProvider] = useState<string>('')
 
