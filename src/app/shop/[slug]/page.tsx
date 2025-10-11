@@ -41,11 +41,21 @@ export default async function ShopPage({ params }: ShopPageProps) {
     notFound()
   }
 
+  // Debug logging
+  console.log('🔍 Feature Flags:', {
+    showRentalChoice: FEATURES.showRentalChoice,
+    enableRentals: FEATURES.enableRentals,
+    enableTestRides: FEATURES.enableTestRides,
+    condition: FEATURES.showRentalChoice && FEATURES.enableRentals && FEATURES.enableTestRides
+  })
+
   // If rental choice is enabled, show landing page
   if (FEATURES.showRentalChoice && FEATURES.enableRentals && FEATURES.enableTestRides) {
+    console.log('✅ Showing LandingChoice')
     return <LandingChoice shop={shop} />
   }
 
   // Otherwise, show test ride widget (legacy behavior)
+  console.log('⚠️ Showing TestDriveWidget (fallback)')
   return <TestDriveWidget shop={shop} />
 }
